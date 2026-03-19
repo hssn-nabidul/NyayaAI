@@ -1,0 +1,23 @@
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project Specific
+backend/cache/
+backend/*.db
+frontend/.next/
+frontend/node_modules/
+node_modules/
+
+# Secrets (Global check)
+*.pem
+*.key
+.env
+.env.local
+firebase-service-account.json
