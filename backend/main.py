@@ -1,8 +1,10 @@
+import os
+import json
+import firebase_admin
+from firebase_admin import credentials
 from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from routers import auth, search, cases, judges, moot, draft, legal_dictionary, analyse, rights, bare_acts, admin
-import os
 import structlog
 from dotenv import load_dotenv
 from pathlib import Path
@@ -13,6 +15,39 @@ logger = structlog.get_logger()
 # Load env
 env_path = Path(__file__).parent / '.env'
 load_dotenv(dotenv_path=env_path)
+
+def init_firebase():
+    try:
+        # Check if already initialized
+        if firebase_admin._apps:
+            return
+
+        # Try environment variable first (production/Render)
+        sa_json = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
+        if sa_json:
+            sa_dict = json.loads(sa_json)
+            cred = credentials.Certificate(sa_dict)
+            firebase_admin.initialize_app(cred)
+            print("Firebase initialized from environment variable")
+            return
+            
+        # Fallback to file (local development)
+        sa_path = Path(__file__).parent / "nyaya-app-9712a-firebase-adminsdk-fbsvc-790c273478.json"
+        if sa_path.exists() and sa_path.stat().st_size > 0:
+            cred = credentials.Certificate(str(sa_path))
+            firebase_admin.initialize_app(cred)
+            print("Firebase initialized from file")
+            return
+            
+        print("WARNING: Firebase not initialized - no credentials found")
+    except Exception as e:
+        print(f"Error initializing Firebase: {e}")
+
+# Initialize Firebase before importing routers
+init_firebase()
+
+# Now import routers
+from routers import auth, search, cases, judges, moot, draft, legal_dictionary, analyse, rights, bare_acts, admin
 
 app = FastAPI(title="Nyaya API", version="1.0.0")
 
