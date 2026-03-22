@@ -29,6 +29,8 @@ const navItems = [
   { icon: Search, label: 'Search', href: '/search' },
   { icon: Book, label: 'Bare Acts', href: '/acts' },
   { icon: Gavel, label: 'Judge Analytics', href: '/judges' },
+  { icon: Gavel, label: 'Moot Prep', href: '/moot' },
+  { icon: PenTool, label: 'AI Drafter', href: '/draft' },
   { icon: Book, label: 'Legal Dictionary', href: '/dictionary' },
   { icon: Scale, label: 'Legal Maxims', href: '/maxims' },
   { icon: ShieldCheck, label: 'Know Your Rights', href: '/rights' },
@@ -36,8 +38,6 @@ const navItems = [
 
 const toolItems = [
   { icon: FileSearch, label: 'Document Analyser', href: '/analyse' },
-  { icon: Gavel, label: 'Moot Prep', href: '/moot' },
-  { icon: PenTool, label: 'AI Draft Assistant', href: '/draft' },
   { icon: Bookmark, label: 'Bookmarks', href: '/bookmarks' },
 ];
 

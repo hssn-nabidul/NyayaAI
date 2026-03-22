@@ -1,0 +1,34 @@
+{
+  "title": "Indian Contract Act",
+  "shortTitle": "ICA",
+  "year": 1872,
+  "slug": "contract-act-1872",
+  "category": "civil",
+  "sections": [
+    {
+      "number": "1",
+      "title": "Short title",
+      "content": "This Act may be called the Indian Contract Act, 1872.\n\nExtent,- It extends to the whole of India; and\nCommencement,- It shall come into force on the first day of September, 1872.\n\nSavings,- But nothing contained in this Act shall affect the provisions of any Statute, Act or Regulation not hereby expressly repealed, nor any usage or custom of trade, nor any incident of any contract, not inconsistent with the provisions of this Act."
+    },
+    {
+      "number": "2",
+      "title": "Definitions",
+      "content": "In this Act the following words and expressions are used in the following senses, unless a contrary intention appears from the context:-\n\nA 'proposal' is made when one person signifies to another his willingness to do or to abstain from doing anything, with a view to obtaining the assent of that other person to such act or abstinence.\n\nA 'promise' is an acceptance of a proposal."
+    },
+    {
+      "number": "10",
+      "title": "What agreements are contracts",
+      "content": "All agreements are contracts if they are made by the free consent of parties competent to contract, for a lawful consideration and with a lawful object, and are not hereby expressly declared to be void."
+    },
+    {
+      "number": "11",
+      "title": "Who are competent to contract",
+      "content": "Every person is competent to contract who is of the age of majority according to the law to which he is subject, and who is of sound mind, and is not disqualified from contracting by any law to which he is subject."
+    },
+    {
+      "number": "17",
+      "title": "Fraud defined",
+      "content": "'Fraud' means and includes any of the following acts committed by a party to a contract, or with his connivance, or by his agent, with intent to deceive another party thereto or his agent, or to induce him to enter into the contract:\n\n(1) the suggestion as a fact, of that which is not true, by one who does not believe it to be true;\n\n(2) the active concealment of a fact by one having knowledge or belief of the fact."
+    }
+  ]
+}

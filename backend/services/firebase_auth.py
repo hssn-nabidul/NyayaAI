@@ -9,7 +9,7 @@ import os
 # For local development, we use the JSON file provided via FIREBASE_CREDENTIALS_PATH
 try:
     if not firebase_admin._apps:
-        cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH", "firebase-service-account.json")
+        cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH", "nyaya-app-9712a-firebase-adminsdk-fbsvc-790c273478.json")
         # Handle absolute or relative paths
         if not os.path.isabs(cred_path):
             cred_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), cred_path)

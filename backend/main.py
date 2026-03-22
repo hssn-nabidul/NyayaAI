@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from routers import auth, search, cases, judges, moot, draft, legal_dictionary, analyse, rights, bare_acts
+from routers import auth, search, cases, judges, moot, draft, legal_dictionary, analyse, rights, bare_acts, admin
 import os
 import structlog
 from dotenv import load_dotenv
@@ -47,6 +47,7 @@ app.include_router(legal_dictionary.router)
 app.include_router(analyse.router)
 app.include_router(rights.router)
 app.include_router(bare_acts.router)
+app.include_router(admin.router)
 
 @app.get("/")
 async def root():

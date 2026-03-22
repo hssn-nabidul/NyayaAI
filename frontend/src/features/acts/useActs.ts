@@ -1,10 +1,5 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
-
-export interface BareAct {
-  title: string;
-  slug: string;
-}
 
 export interface Section {
   number: string;
@@ -12,67 +7,46 @@ export interface Section {
   content: string;
 }
 
-export interface ActDetails {
-  title: string;
-  slug: string;
-  sections: Section[];
+export interface ExplainResponse {
+  section: string;
+  act: string;
+  simple_explanation: string;
+  key_points: string[];
+  illustration: string;
+  related_sections: string[];
 }
 
-export interface SectionDetailResponse {
-  section: Section;
-  act_title: string;
-  related_cases: any[];
-  total_cases: number;
-}
-
-export function useActs() {
-  return useQuery<BareAct[]>({
-    queryKey: ['acts'],
-    queryFn: async () => {
-      const response = await apiClient.get<BareAct[]>('/acts');
-      return response || [];
-    },
-  });
-}
-
-export function useActDetails(slug: string) {
-  return useQuery<ActDetails>({
-    queryKey: ['acts', slug],
-    queryFn: async () => {
-      const response = await apiClient.get<ActDetails>(`/acts/${slug}`);
-      return response;
-    },
-    enabled: !!slug,
-  });
-}
-
-export function useSectionDetails(actSlug: string, sectionNumber: string) {
-  return useQuery<SectionDetailResponse>({
-    queryKey: ['acts', actSlug, 'sections', sectionNumber],
-    queryFn: async () => {
-      const response = await apiClient.get<SectionDetailResponse>(`/acts/${actSlug}/sections/${sectionNumber}`);
-      return response;
-    },
-    enabled: !!actSlug && !!sectionNumber,
-  });
-}
-
+/**
+ * AI Explainer only activates on explicit button click.
+ * Implements localStorage caching to prevent redundant API calls.
+ */
 export function useExplainSection(actSlug: string, sectionNumber: string) {
   return useMutation({
     mutationFn: async () => {
-      const response = await apiClient.post<any>(`/acts/${actSlug}/sections/${sectionNumber}/explain`, {});
-      return response;
-    },
-  });
-}
+      const cacheKey = `section_explain_${actSlug}_${sectionNumber}`;
+      
+      // Check localStorage first
+      const cachedData = localStorage.getItem(cacheKey);
+      if (cachedData) {
+        try {
+          return JSON.parse(cachedData) as ExplainResponse;
+        } catch (e) {
+          localStorage.removeItem(cacheKey);
+        }
+      }
 
-export function useSearchAct(actSlug: string, query: string) {
-  return useQuery<Section[]>({
-    queryKey: ['acts', actSlug, 'search', query],
-    queryFn: async () => {
-      const response = await apiClient.get<Section[]>(`/acts/${actSlug}/search`, { params: { q: query } } as any);
+      // If not cached, call API
+      const response = await apiClient.post<ExplainResponse>(`/acts/explain-section`, {
+        act_slug: actSlug,
+        section_number: sectionNumber
+      });
+
+      // Cache result if successful
+      if (response) {
+        localStorage.setItem(cacheKey, JSON.stringify(response));
+      }
+
       return response;
     },
-    enabled: !!actSlug && query.length > 2,
   });
 }

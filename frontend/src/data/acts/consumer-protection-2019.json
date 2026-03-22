@@ -1,0 +1,34 @@
+{
+  "title": "Consumer Protection Act",
+  "shortTitle": "CPA",
+  "year": 2019,
+  "slug": "consumer-protection-2019",
+  "category": "special",
+  "sections": [
+    {
+      "number": "2",
+      "title": "Definitions",
+      "content": "In this Act, unless the context otherwise requires,-\n\n(47) 'unfair trade practice' means a trade practice which, for the purpose of promoting the sale, use or supply of any goods or services, adopts one or more of the following practices, namely:-\n\n(a) making any statement, whether orally or in writing or by visible representation which-\n\n(i) falsely represents that the goods or services are of a particular standard, quality, quantity, grade, composition, style or model;"
+    },
+    {
+      "number": "3",
+      "title": "Consumer right to be informed of quality, quantity and potency of goods",
+      "content": "A consumer shall have the right to be informed about the quality, quantity, potency, purity, standard and price of goods so as to protect the consumer from unfair trade practices."
+    },
+    {
+      "number": "35",
+      "title": "Punishment for manufacturing for sale or storing for sale of adulterant",
+      "content": "Whoever himself or by any other person on his behalf manufactures for sale, or stores, sells or distributes, any adulterant shall be punished,- \n\n(i) for the first offence, with imprisonment for a term which shall not be less than one year, but which may extend to three years, and with fine which shall not be less than one lakh rupees, but which may extend to five lakh rupees;"
+    },
+    {
+      "number": "88",
+      "title": "Penalties for false or misleading advertisement",
+      "content": "A manufacturer or seller or trader or service provider who causes a false or misleading advertisement to be made which is false or misleading concerning the characteristics of any goods or services shall be punished with imprisonment for a term which may extend to two years or with fine which may extend to ten lakh rupees or with both."
+    },
+    {
+      "number": "101",
+      "title": "Appeal against order of District Commission",
+      "content": "Any person aggrieved by an order made by the District Commission in exercise of its powers under this Act may, file an appeal against such order before the State Commission within a period of forty-five days from the date of the order."
+    }
+  ]
+}

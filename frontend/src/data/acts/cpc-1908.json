@@ -1,0 +1,34 @@
+{
+  "title": "Civil Procedure Code",
+  "shortTitle": "CPC",
+  "year": 1908,
+  "slug": "cpc-1908",
+  "category": "civil",
+  "sections": [
+    {
+      "number": "1",
+      "title": "Short title, commencement and extent",
+      "content": "(1) This Act may be called the Code of Civil Procedure, 1908.\n\n(2) It shall come into force on the first day of January, 1909.\n\n(3) It extends to the whole of India except the State of Jammu and Kashmir."
+    },
+    {
+      "number": "2",
+      "title": "Definitions",
+      "content": "In this Code, unless there is anything repugnant in the subject or context,-\n\n(a) 'decree' means the formal expression of an adjudication which, so far as regards the Court expressing it, conclusively determines the rights of the parties with regard to all or any of the matters in controversy in the suit;\n\n(b) 'decree-holder' means any person in whose favour a decree has been passed or an order capable of execution has been made."
+    },
+    {
+      "number": "9",
+      "title": "Courts to try all civil suits unless barred",
+      "content": "The Courts shall (subject to the provisions herein contained) have jurisdiction to try all suits of a civil nature excepting suits of which their cognizance is either expressly or impliedly barred.\n\nExplanation.- A suit in which the right to property or to an office is contested is a suit of a civil nature, notwithstanding that such right may depend entirely on the decision of a question of religious rites or ceremonies."
+    },
+    {
+      "number": "10",
+      "title": "Stay of suit",
+      "content": "No Court shall proceed with the trial of any suit in which the matter in issue is also directly and substantially in issue in a previously instituted suit between the same parties, or between parties under whom they or any of them claim to hold their respective parties."
+    },
+    {
+      "number": "11",
+      "title": "Res judicata",
+      "content": "No Court shall try any suit or issue in which the matter directly and substantially in issue has been directly and substantially in issue in a former suit between the same parties, or between parties under whom they or any of them claim to hold their respective parties, and in which such Court has passed a decree or order conclusive of such matter."
+    }
+  ]
+}
