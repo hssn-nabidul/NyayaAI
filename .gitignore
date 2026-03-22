@@ -1,23 +1,36 @@
-# IDEs
-.vscode/
-.idea/
-*.swp
-*.swo
+# Environment files
+backend/.env
+frontend/.env.local
+
+# Firebase service account
+backend/*.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.db
+
+# Node
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Flutter
+app/build/
+app/.dart_tool/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Project Specific
-backend/cache/
-backend/*.db
-frontend/.next/
-frontend/node_modules/
-node_modules/
+# IDE
+.vscode/
+.idea
 
-# Secrets (Global check)
-*.pem
-*.key
-.env
-.env.local
-firebase-service-account.json
+# Windows reserved names
+nul
