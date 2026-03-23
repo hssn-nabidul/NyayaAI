@@ -164,3 +164,7 @@ async def get_cites(docid: str) -> Dict[str, Any]:
 
 async def get_citedby(docid: str) -> Dict[str, Any]:
     return await search_judgments(query=f"citedby: {docid}")
+
+async def search_by_judge(judge_name: str, pagenum: int = 0) -> Dict[str, Any]:
+    """Search for judgments by a specific judge."""
+    return await search_judgments(query=f"author: {judge_name}", pagenum=pagenum)
