@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useTermExplain } from '@/features/dictionary/useTermExplain';
 import { Search, Book, Sparkles, Scale, Info, Loader2, AlertCircle, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/auth.store';
+import { useAuthModalStore } from '@/lib/stores/auth-modal.store';
 import AuthGate from '@/components/auth/AuthGate';
 
 export default function DictionaryPage() {
