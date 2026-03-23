@@ -89,49 +89,48 @@ export default function JudgesPage() {
               {/* Profile Card */}
               <div className="bg-white/2 border border-white/5 rounded-[2.5rem] p-8 md:p-12 space-y-8 relative overflow-hidden">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 relative z-10">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-gold/60">
-                      <Scale size={14} />
-                      <span className="text-[10px] font-bold uppercase tracking-widest">Judicial Profile</span>
-                    </div>
-                    <h2 className="text-4xl font-serif text-cream">Justice {data.judge_name}</h2>
-                    <div className="flex items-center gap-3 pt-2">
-                      <span className="px-3 py-1 bg-gold/10 text-gold text-[10px] font-bold uppercase tracking-widest rounded-full border border-gold/20">
-                        {data.profile.ideological_tendency}
-                      </span>
-                      <span className="text-cream/20 text-xs">•</span>
-                      <span className="text-cream/40 text-[10px] font-bold uppercase tracking-widest">
-                        {data.stats.total_found} Judgments Indexed
-                      </span>
-                    </div>
-                  </div>
+                <div className="space-y-2">
+                <div className="flex items-center gap-2 text-gold/60">
+                  <Scale size={14} />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Judicial Profile</span>
+                </div>
+                <h2 className="text-4xl font-serif text-cream">Justice {data.judge_name}</h2>
+                <div className="flex items-center gap-3 pt-2">
+                  <span className="px-3 py-1 bg-gold/10 text-gold text-[10px] font-bold uppercase tracking-widest rounded-full border border-gold/20">
+                    {typeof data.profile.ideological_tendency === 'string' ? data.profile.ideological_tendency : (data.profile.ideological_tendency as any)?.text || 'Neutral'}
+                  </span>
+                  <span className="text-cream/20 text-xs">•</span>
+                  <span className="text-cream/40 text-[10px] font-bold uppercase tracking-widest">
+                    {data.stats.total_found} Judgments Indexed
+                  </span>
+                </div>
+                </div>
                 </div>
 
                 <div className="h-px bg-white/5" />
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10">
-                  <div className="md:col-span-2 space-y-6">
-                    <div className="space-y-4">
-                      <h4 className="text-[10px] font-bold uppercase tracking-widest text-gold/60">Judicial Philosophy</h4>
-                      <p className="text-lg text-cream/80 leading-relaxed font-sans italic">
-                        "{data.profile.profile_summary}"
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-6">
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-gold/60">Known For</h4>
-                    <ul className="space-y-3">
-                      {data.profile.known_for.map((item, i) => (
-                        <li key={i} className="flex items-start gap-3 text-xs text-cream/60">
-                          <div className="w-1.5 h-1.5 rounded-full bg-gold/40 mt-1.5 shrink-0" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                <div className="md:col-span-2 space-y-6">
+                <div className="space-y-4">
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-gold/60">Judicial Philosophy</h4>
+                  <p className="text-lg text-cream/80 leading-relaxed font-sans italic">
+                    "{typeof data.profile.profile_summary === 'string' ? data.profile.profile_summary : (data.profile.profile_summary as any)?.text || 'Summary unavailable.'}"
+                  </p>
                 </div>
-              </div>
+                </div>
+
+                <div className="space-y-6">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-gold/60">Known For</h4>
+                <ul className="space-y-3">
+                  {data.profile.known_for.map((item: any, i: number) => (
+                    <li key={i} className="flex items-start gap-3 text-xs text-cream/60">
+                      <div className="w-1.5 h-1.5 rounded-full bg-gold/40 mt-1.5 shrink-0" />
+                      <span>{typeof item === 'string' ? item : item?.text || String(item)}</span>
+                    </li>
+                  ))}
+                </ul>
+                </div>
+                </div>              </div>
 
               {/* Recent Judgments */}
               <div className="space-y-6">

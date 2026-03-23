@@ -33,7 +33,14 @@ class ApiClient {
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new ApiError(response.status, errorData.detail || response.statusText, errorData);
+      const detail = errorData.detail;
+      const message = typeof detail === 'string' 
+        ? detail 
+        : (typeof detail === 'object' && detail !== null && 'message' in detail)
+          ? String(detail.message)
+          : response.statusText;
+          
+      throw new ApiError(response.status, message, errorData);
     }
     return response.json();
   }

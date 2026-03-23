@@ -106,8 +106,8 @@ export default function NLPSearchBox({ onResultsFound, onClear }: NLPSearchBoxPr
                 <h4 className="text-[10px] font-bold uppercase tracking-widest">Principles</h4>
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {data.ai_analysis.legal_principles.map((p, i) => (
-                  <span key={i} className="text-[10px] bg-white/5 text-cream/60 px-2 py-1 rounded-md border border-white/5">{p}</span>
+                {data.ai_analysis.legal_principles.map((p: any, i: number) => (
+                  <span key={i} className="text-[10px] bg-white/5 text-cream/60 px-2 py-1 rounded-md border border-white/5">{typeof p === 'string' ? p : p?.text || String(p)}</span>
                 ))}
               </div>
             </section>
@@ -118,8 +118,8 @@ export default function NLPSearchBox({ onResultsFound, onClear }: NLPSearchBoxPr
                 <h4 className="text-[10px] font-bold uppercase tracking-widest">Articles/Acts</h4>
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {[...data.ai_analysis.relevant_articles, ...data.ai_analysis.relevant_acts_sections].map((a, i) => (
-                  <span key={i} className="text-[10px] bg-white/5 text-cream/60 px-2 py-1 rounded-md border border-white/5">{a}</span>
+                {[...data.ai_analysis.relevant_articles, ...data.ai_analysis.relevant_acts_sections].map((a: any, i: number) => (
+                  <span key={i} className="text-[10px] bg-white/5 text-cream/60 px-2 py-1 rounded-md border border-white/5">{typeof a === 'string' ? a : a?.text || a?.section || String(a)}</span>
                 ))}
               </div>
             </section>
@@ -130,8 +130,8 @@ export default function NLPSearchBox({ onResultsFound, onClear }: NLPSearchBoxPr
                 <h4 className="text-[10px] font-bold uppercase tracking-widest">Landmark Cases</h4>
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {data.ai_analysis.landmark_cases_to_include.map((c, i) => (
-                  <span key={i} className="text-[10px] bg-white/5 text-cream/60 px-2 py-1 rounded-md border border-white/5 italic">{c}</span>
+                {data.ai_analysis.landmark_cases_to_include.map((c: any, i: number) => (
+                  <span key={i} className="text-[10px] bg-white/5 text-cream/60 px-2 py-1 rounded-md border border-white/5 italic">{typeof c === 'string' ? c : c?.title || c?.name || String(c)}</span>
                 ))}
               </div>
             </section>

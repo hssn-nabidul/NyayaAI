@@ -130,10 +130,10 @@ export default function DraftAssistantPage() {
                   Detected Legal Points
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {data.detected_arguments.map((arg, i) => (
+                  {data.detected_arguments.map((arg: any, i: number) => (
                     <div key={i} className="px-4 py-2 bg-white/5 rounded-xl border border-white/5 text-xs text-cream/70 flex items-center gap-2">
                       <div className="w-1 h-1 rounded-full bg-gold" />
-                      {arg}
+                      {typeof arg === 'string' ? arg : arg?.text || String(arg)}
                     </div>
                   ))}
                 </div>
@@ -147,7 +147,7 @@ export default function DraftAssistantPage() {
                 </h3>
                 
                 <div className="space-y-4">
-                  {data.suggestions.map((suggestion, i) => (
+                  {data.suggestions.map((suggestion: any, i: number) => (
                     <div key={i} className="bg-white/2 border border-white/5 rounded-[2rem] p-6 hover:bg-white/5 hover:border-gold/20 transition-all group relative overflow-hidden">
                       {/* Relevance Score Indicator */}
                       <div className="absolute top-0 left-0 bottom-0 w-1 bg-gold opacity-20" style={{ opacity: suggestion.relevance_score }} />
@@ -156,12 +156,12 @@ export default function DraftAssistantPage() {
                         <div className="flex items-start justify-between">
                           <div className="space-y-1">
                             <span className="text-[9px] font-bold text-gold uppercase tracking-widest bg-gold/10 px-2 py-0.5 rounded border border-gold/20">
-                              {suggestion.court} · {suggestion.year}
+                              {typeof suggestion.court === 'string' ? suggestion.court : suggestion.court?.text || 'Court'} · {suggestion.year}
                             </span>
                             <h4 className="text-base font-serif text-cream leading-tight pt-1 group-hover:text-gold transition-colors">
-                              {suggestion.title}
+                              {typeof suggestion.title === 'string' ? suggestion.title : suggestion.title?.text || 'Judgment'}
                             </h4>
-                            <p className="text-[10px] text-cream/30 font-mono italic">{suggestion.citation}</p>
+                            <p className="text-[10px] text-cream/30 font-mono italic">{typeof suggestion.citation === 'string' ? suggestion.citation : suggestion.citation?.text || 'Citation'}</p>
                           </div>
                           <div className="text-[10px] font-bold text-status-green flex flex-col items-end">
                              <span>{Math.round(suggestion.relevance_score * 100)}%</span>
@@ -175,7 +175,7 @@ export default function DraftAssistantPage() {
                               <span className="text-[8px] font-bold uppercase tracking-widest">Relevance to your draft</span>
                            </div>
                            <p className="text-xs text-cream/60 leading-relaxed italic">
-                             "{suggestion.reason}"
+                             "{typeof suggestion.reason === 'string' ? suggestion.reason : suggestion.reason?.text || 'No reason specified.'}"
                            </p>
                         </div>
 

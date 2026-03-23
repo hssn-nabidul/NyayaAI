@@ -131,21 +131,21 @@ export default function MootPage() {
                   </div>
                   
                   <div className="space-y-4">
-                    {data.analysis.petitioner.arguments.map((arg, i) => (
+                    {data.analysis.petitioner.arguments.map((arg: any, i: number) => (
                       <div key={i} className="bg-white/2 border border-white/5 rounded-3xl p-8 space-y-4 hover:border-gold/20 transition-all">
-                        <h4 className="text-lg font-serif text-cream font-bold leading-tight">{i + 1}. {arg.heading}</h4>
-                        <p className="text-sm text-cream/60 leading-relaxed">{arg.body}</p>
+                        <h4 className="text-lg font-serif text-cream font-bold leading-tight">{i + 1}. {typeof arg.heading === 'string' ? arg.heading : arg.heading?.text || 'Legal Argument'}</h4>
+                        <p className="text-sm text-cream/60 leading-relaxed">{typeof arg.body === 'string' ? arg.body : arg.body?.text || 'Argument details unavailable.'}</p>
                         
                         <div className="pt-4 space-y-3">
                           <p className="text-[10px] font-bold text-gold/40 uppercase tracking-widest">Supporting Precedents</p>
                           <div className="grid grid-cols-1 gap-2">
-                            {arg.supporting_cases.map((c, ci) => (
+                            {arg.supporting_cases.map((c: any, ci: number) => (
                               <div key={ci} className="bg-white/5 p-4 rounded-xl border border-white/5 space-y-1">
                                 <div className="flex items-center justify-between">
-                                  <span className="text-xs font-bold text-cream/80">{c.title} ({c.year})</span>
-                                  <span className="text-[9px] text-gold/60 font-mono">{c.citation}</span>
+                                  <span className="text-xs font-bold text-cream/80">{typeof c.title === 'string' ? c.title : c.title?.text || 'Case'} ({c.year})</span>
+                                  <span className="text-[9px] text-gold/60 font-mono">{typeof c.citation === 'string' ? c.citation : c.citation?.text || 'Citation'}</span>
                                 </div>
-                                <p className="text-[11px] text-cream/40 italic">{c.relevance}</p>
+                                <p className="text-[11px] text-cream/40 italic">{typeof c.relevance === 'string' ? c.relevance : c.relevance?.text || ''}</p>
                               </div>
                             ))}
                           </div>
@@ -160,7 +160,9 @@ export default function MootPage() {
                       Anticipated Rebuttal
                     </h4>
                     <p className="text-sm text-cream/70 italic leading-relaxed">
-                      {data.analysis.petitioner.anticipated_counter}
+                      {typeof data.analysis.petitioner.anticipated_counter === 'string' 
+                        ? data.analysis.petitioner.anticipated_counter 
+                        : (data.analysis.petitioner.anticipated_counter as any)?.text || 'No counter-argument provided.'}
                     </p>
                   </div>
                 </div>
@@ -176,21 +178,21 @@ export default function MootPage() {
                   </div>
                   
                   <div className="space-y-4">
-                    {data.analysis.respondent.arguments.map((arg, i) => (
+                    {data.analysis.respondent.arguments.map((arg: any, i: number) => (
                       <div key={i} className="bg-white/2 border border-white/5 rounded-3xl p-8 space-y-4 hover:border-white/20 transition-all">
-                        <h4 className="text-lg font-serif text-cream font-bold leading-tight">{i + 1}. {arg.heading}</h4>
-                        <p className="text-sm text-cream/60 leading-relaxed">{arg.body}</p>
+                        <h4 className="text-lg font-serif text-cream font-bold leading-tight">{i + 1}. {typeof arg.heading === 'string' ? arg.heading : arg.heading?.text || 'Legal Argument'}</h4>
+                        <p className="text-sm text-cream/60 leading-relaxed">{typeof arg.body === 'string' ? arg.body : arg.body?.text || 'Argument details unavailable.'}</p>
                         
                         <div className="pt-4 space-y-3">
                           <p className="text-[10px] font-bold text-cream/20 uppercase tracking-widest">Supporting Precedents</p>
                           <div className="grid grid-cols-1 gap-2">
-                            {arg.supporting_cases.map((c, ci) => (
+                            {arg.supporting_cases.map((c: any, ci: number) => (
                               <div key={ci} className="bg-white/5 p-4 rounded-xl border border-white/5 space-y-1">
                                 <div className="flex items-center justify-between">
-                                  <span className="text-xs font-bold text-cream/80">{c.title} ({c.year})</span>
-                                  <span className="text-[9px] text-cream/40 font-mono">{c.citation}</span>
+                                  <span className="text-xs font-bold text-cream/80">{typeof c.title === 'string' ? c.title : c.title?.text || 'Case'} ({c.year})</span>
+                                  <span className="text-[9px] text-cream/40 font-mono">{typeof c.citation === 'string' ? c.citation : c.citation?.text || 'Citation'}</span>
                                 </div>
-                                <p className="text-[11px] text-cream/40 italic">{c.relevance}</p>
+                                <p className="text-[11px] text-cream/40 italic">{typeof c.relevance === 'string' ? c.relevance : c.relevance?.text || ''}</p>
                               </div>
                             ))}
                           </div>
@@ -205,7 +207,9 @@ export default function MootPage() {
                       Anticipated Rebuttal
                     </h4>
                     <p className="text-sm text-cream/70 italic leading-relaxed">
-                      {data.analysis.respondent.anticipated_counter}
+                      {typeof data.analysis.respondent.anticipated_counter === 'string' 
+                        ? data.analysis.respondent.anticipated_counter 
+                        : (data.analysis.respondent.anticipated_counter as any)?.text || 'No counter-argument provided.'}
                     </p>
                   </div>
                 </div>

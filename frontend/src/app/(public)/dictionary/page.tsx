@@ -91,9 +91,11 @@ export default function DictionaryPage() {
                     <Info size={14} />
                     <span className="text-[10px] font-bold uppercase tracking-widest">Definition</span>
                   </div>
-                  <h2 className="text-3xl font-serif text-cream">{data.explanation.term}</h2>
+                  <h2 className="text-3xl font-serif text-cream">
+                    {typeof data.explanation.term === 'string' ? data.explanation.term : (data.explanation.term as any)?.text || 'Legal Term'}
+                  </h2>
                   <p className="text-lg text-cream/80 leading-relaxed font-sans italic">
-                    "{data.explanation.definition}"
+                    "{typeof data.explanation.definition === 'string' ? data.explanation.definition : (data.explanation.definition as any)?.text || 'Definition unavailable.'}"
                   </p>
                 </div>
 
@@ -105,7 +107,7 @@ export default function DictionaryPage() {
                     <span className="text-[10px] font-bold uppercase tracking-widest">Application in India</span>
                   </div>
                   <p className="text-cream/70 leading-relaxed">
-                    {data.explanation.context_india}
+                    {typeof data.explanation.context_india === 'string' ? data.explanation.context_india : (data.explanation.context_india as any)?.text || 'Context unavailable.'}
                   </p>
                 </div>
 
@@ -118,8 +120,8 @@ export default function DictionaryPage() {
                     <ul className="space-y-2">
                       {data.explanation.landmark_cases.map((c, i) => (
                         <li key={i} className="flex items-start gap-3 text-xs text-cream/50">
-                          <ChevronRight size={12} className="mt-0.5 text-gold/40" />
-                          <span>{c}</span>
+                          <ChevronRight size={12} className="mt-0.5 text-gold/40 shrink-0" />
+                          <span>{typeof c === 'string' ? c : (c as any)?.title || (c as any)?.name || String(c)}</span>
                         </li>
                       ))}
                     </ul>
@@ -140,7 +142,7 @@ export default function DictionaryPage() {
                           }}
                           className="px-3 py-1.5 bg-white/5 border border-white/5 rounded-lg text-[10px] text-cream/40 hover:border-gold/30 hover:text-gold transition-all"
                         >
-                          {t}
+                          {typeof t === 'string' ? t : (t as any)?.text || String(t)}
                         </button>
                       ))}
                     </div>

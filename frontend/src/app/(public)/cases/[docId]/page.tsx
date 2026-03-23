@@ -250,7 +250,7 @@ export default function CaseDetailPage() {
                          Plain Summary
                       </h4>
                       <p className="text-sm text-cream/80 leading-relaxed font-sans italic">
-                        "{summary.plain_summary}"
+                        "{typeof summary.plain_summary === 'string' ? summary.plain_summary : (summary.plain_summary as any)?.text || 'No summary available.'}"
                       </p>
                     </section>
 
@@ -260,10 +260,10 @@ export default function CaseDetailPage() {
                          Key Legal Issues
                       </h4>
                       <ul className="space-y-2">
-                        {summary.key_issues.map((issue, idx) => (
+                        {summary.key_issues.map((issue: any, idx: number) => (
                           <li key={idx} className="text-xs text-cream/60 flex gap-2">
                             <span className="text-gold">•</span>
-                            <span>{issue}</span>
+                            <span>{typeof issue === 'string' ? issue : (issue as any)?.text || (issue as any)?.issue || String(issue)}</span>
                           </li>
                         ))}
                       </ul>
@@ -276,7 +276,7 @@ export default function CaseDetailPage() {
                       </h4>
                       <div className="p-4 bg-white/5 rounded-xl border border-white/5">
                         <p className="text-xs text-cream/80 leading-relaxed font-sans">
-                          {summary.holding}
+                          {typeof summary.holding === 'string' ? summary.holding : (summary.holding as any)?.text || 'No holding available.'}
                         </p>
                       </div>
                     </section>
@@ -287,15 +287,15 @@ export default function CaseDetailPage() {
                          Significance
                       </h4>
                       <p className="text-xs text-cream/60 leading-relaxed">
-                        {summary.significance}
+                        {typeof summary.significance === 'string' ? summary.significance : (summary.significance as any)?.text || 'No significance data.'}
                       </p>
                     </section>
                     
                     {summary.area_of_law && (
                       <div className="flex flex-wrap gap-2 pt-2">
-                        {summary.area_of_law.map((tag, idx) => (
+                        {summary.area_of_law.map((tag: any, idx: number) => (
                           <span key={idx} className="px-2 py-1 bg-white/5 text-[10px] text-cream/40 rounded border border-white/5 hover:border-gold/20 transition-colors">
-                            #{tag}
+                            #{typeof tag === 'string' ? tag : (tag as any)?.text || (tag as any)?.name || String(tag)}
                           </span>
                         ))}
                       </div>

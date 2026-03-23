@@ -441,7 +441,7 @@ export default function ActDetailPage() {
                   </div>
                   <div className="p-5 bg-white/2 rounded-2xl border border-white/5">
                     <p className="text-sm text-cream/90 leading-relaxed font-sans italic">
-                      "{explanation.simple_explanation}"
+                      "{typeof explanation.simple_explanation === 'string' ? explanation.simple_explanation : (explanation.simple_explanation as any)?.text || 'No explanation available.'}"
                     </p>
                   </div>
                 </section>
@@ -452,10 +452,10 @@ export default function ActDetailPage() {
                     <h4 className="text-[10px] font-black uppercase tracking-widest">Key Takeaways</h4>
                   </div>
                   <ul className="space-y-4">
-                    {explanation.key_points?.map((pt: string, i: number) => (
+                    {explanation.key_points?.map((pt: any, i: number) => (
                       <li key={i} className="text-sm text-cream/60 flex gap-4 leading-snug">
                         <CheckCircle2 size={16} className="text-gold shrink-0 mt-0.5" />
-                        <span>{pt}</span>
+                        <span>{typeof pt === 'string' ? pt : pt?.text || pt?.point || String(pt)}</span>
                       </li>
                     ))}
                   </ul>
@@ -468,7 +468,7 @@ export default function ActDetailPage() {
                   </div>
                   <div className="p-5 bg-gold/5 rounded-2xl border border-gold/10">
                     <p className="text-xs text-cream/70 leading-relaxed italic font-sans">
-                      {explanation.illustration}
+                      {typeof explanation.illustration === 'string' ? explanation.illustration : (explanation.illustration as any)?.text || 'No illustration available.'}
                     </p>
                   </div>
                 </section>
@@ -488,7 +488,16 @@ export default function ActDetailPage() {
                 <ShieldAlert size={40} className="text-status-red/40" />
                 <p className="text-sm text-cream/60">We couldn't generate an explanation right now. Please try again.</p>
                 <button 
-                  onClick={() => explainSection()}
+                  onClick={() => {
+                    if (activeSection) {
+                      explainSection({
+                        act_id: actSlug,
+                        section_number: activeSection.number,
+                        section_title: activeSection.title,
+                        section_text: activeSection.content
+                      });
+                    }
+                  }}
                   className="px-6 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-cream hover:bg-white/10"
                 >
                   Retry AI Call

@@ -102,12 +102,12 @@ export default function RightsPage() {
                       <span className="text-[10px] font-bold uppercase tracking-widest">Legal Protection</span>
                     </div>
                     <span className="px-3 py-1 bg-gold/10 text-gold text-[10px] font-bold uppercase tracking-widest rounded-full border border-gold/20">
-                      {data.explanation.article}
+                      {typeof data.explanation.article === 'string' ? data.explanation.article : (data.explanation.article as any)?.text || 'Constitutional Provision'}
                     </span>
                   </div>
-                  <h2 className="text-3xl font-serif text-cream">{data.explanation.right_name}</h2>
+                  <h2 className="text-3xl font-serif text-cream">{typeof data.explanation.right_name === 'string' ? data.explanation.right_name : (data.explanation.right_name as any)?.text || 'Fundamental Right'}</h2>
                   <p className="text-lg text-cream/80 leading-relaxed font-sans italic">
-                    "{data.explanation.simple_explanation}"
+                    "{typeof data.explanation.simple_explanation === 'string' ? data.explanation.simple_explanation : (data.explanation.simple_explanation as any)?.text || 'No explanation available.'}"
                   </p>
                 </div>
 
@@ -122,7 +122,7 @@ export default function RightsPage() {
                     {data.explanation.what_you_can_do.map((item, i) => (
                       <li key={i} className="flex items-start gap-3 text-cream/70 text-sm md:text-base bg-white/5 p-4 rounded-2xl border border-white/5">
                         <div className="w-1.5 h-1.5 rounded-full bg-gold/40 mt-2 shrink-0" />
-                        <span>{item}</span>
+                        <span>{typeof item === 'string' ? item : (item as any)?.text || (item as any)?.action || String(item)}</span>
                       </li>
                     ))}
                   </ul>
@@ -138,7 +138,7 @@ export default function RightsPage() {
                       {data.explanation.landmark_cases.map((c, i) => (
                         <li key={i} className="flex items-start gap-3 text-xs text-cream/50">
                           <ChevronRight size={12} className="mt-0.5 text-gold/40 shrink-0" />
-                          <span>{c}</span>
+                          <span>{typeof c === 'string' ? c : (c as any)?.title || (c as any)?.name || String(c)}</span>
                         </li>
                       ))}
                     </ul>
@@ -150,7 +150,7 @@ export default function RightsPage() {
                       <span className="text-[10px] font-bold uppercase tracking-widest">Legal Remedy</span>
                     </div>
                     <div className="p-4 bg-white/5 border border-white/5 rounded-xl text-xs text-cream/60 leading-relaxed italic">
-                      {data.explanation.remedy}
+                      {typeof data.explanation.remedy === 'string' ? data.explanation.remedy : (data.explanation.remedy as any)?.text || 'Consult a legal professional.'}
                     </div>
                   </div>
                 </div>
