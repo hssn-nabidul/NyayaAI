@@ -9,9 +9,14 @@ router = APIRouter(
     tags=["analyse"],
 )
 
+from pydantic import BaseModel
+
+class AnalyseRequest(BaseModel):
+    doc_text: str
+
 @router.post("/")
 async def analyse_document(
-    doc_text: str = Body(..., embed=True),
+    request: AnalyseRequest,
     current_user: FirebaseUser = Depends(get_current_user)
 ) -> Dict[str, Any]:
     """
@@ -22,7 +27,7 @@ async def analyse_document(
     
     try:
         # 2. Analyse using Gemini
-        analysis = await analyse_legal_document(doc_text)
+        analysis = await analyse_legal_document(request.doc_text)
         
         return {
             "analysis": analysis,

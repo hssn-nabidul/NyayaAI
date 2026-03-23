@@ -11,7 +11,7 @@ router = APIRouter(
 
 @router.get("/explain")
 async def get_right_explanation(
-    q: str = Query(..., min_length=3),
+    q: str = Query(..., description="Fundamental right to explain"),
     current_user: FirebaseUser = Depends(get_current_user)
 ) -> Dict[str, Any]:
     """

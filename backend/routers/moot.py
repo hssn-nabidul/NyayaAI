@@ -9,11 +9,16 @@ router = APIRouter(
     tags=["moot"],
 )
 
+from pydantic import BaseModel
+
+class MootPrepRequest(BaseModel):
+    proposition: str
+    side: str = "both"
+    format: str = "memorial"
+
 @router.post("/prep")
 async def get_moot_prep(
-    proposition: str = Body(..., embed=True),
-    side: str = Body("both", embed=True),
-    format: str = Body("memorial", embed=True),
+    request: MootPrepRequest,
     current_user: FirebaseUser = Depends(get_current_user)
 ) -> Dict[str, Any]:
     """
@@ -24,11 +29,11 @@ async def get_moot_prep(
     
     try:
         # 2. Generate arguments using Gemini
-        analysis = await prepare_moot_arguments(proposition, side, format)
+        analysis = await prepare_moot_arguments(request.proposition, request.side, request.format)
         
         return {
-            "proposition": proposition,
-            "side": side,
+            "proposition": request.proposition,
+            "side": request.side,
             "analysis": analysis,
             "usage": usage
         }

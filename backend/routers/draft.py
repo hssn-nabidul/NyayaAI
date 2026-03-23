@@ -9,10 +9,15 @@ router = APIRouter(
     tags=["draft"],
 )
 
+from pydantic import BaseModel
+
+class DraftSuggestRequest(BaseModel):
+    draft_text: str
+    max_suggestions: int = 5
+
 @router.post("/suggest")
 async def get_draft_suggestions(
-    draft_text: str = Body(..., embed=True),
-    max_suggestions: int = Body(5, embed=True),
+    request: DraftSuggestRequest,
     current_user: FirebaseUser = Depends(get_current_user)
 ) -> Dict[str, Any]:
     """
@@ -23,7 +28,7 @@ async def get_draft_suggestions(
     
     try:
         # 2. Get suggestions using Gemini
-        suggestions = await suggest_draft_cases(draft_text, max_suggestions)
+        suggestions = await suggest_draft_cases(request.draft_text, request.max_suggestions)
         
         return {
             "analysis": suggestions,

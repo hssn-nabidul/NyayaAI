@@ -111,7 +111,7 @@ async def perform_search(
 
 @router.post("/nlp")
 async def nlp_search(
-    description: str = Body(..., embed=True),
+    description: str = Body(...),
     page: int = Query(0, ge=0),
     current_user: FirebaseUser = Depends(get_current_user)
 ) -> Dict[str, Any]:
