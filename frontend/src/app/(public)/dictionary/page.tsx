@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTermExplain } from '@/features/dictionary/useTermExplain';
-import { Search, Book, Sparkles, Scale, Info, Loader2, AlertCircle, ChevronRight, Library, Quote } from 'lucide-react';
+import { Search, Book, Sparkles, Scale, Info, Loader2, AlertCircle, ChevronRight, Library, Quote, Gavel } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/auth.store';
 import { useAuthModalStore } from '@/lib/stores/auth-modal.store';
 import AuthGate from '@/components/auth/AuthGate';
