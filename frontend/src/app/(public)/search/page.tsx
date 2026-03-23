@@ -12,12 +12,14 @@ import { Loader2, Search as SearchIcon, AlertCircle, Sparkles, Filter, Info } fr
 import Link from 'next/link';
 import { NLPSearchResponse } from '@/features/search/useNLPSearch';
 import { SearchResult } from '@/types/api';
+import { useAuthModalStore } from '@/lib/stores/auth-modal.store';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const query = searchParams.get('q') || '';
   const page = parseInt(searchParams.get('page') || '0');
+  const openAuthModal = useAuthModalStore((state) => state.openModal);
   
   // Local state for filters
   const [filters, setFilters] = React.useState<IFilters>({
@@ -100,7 +102,7 @@ export default function SearchPage() {
             <button 
               onClick={() => {
                 if (!user) {
-                  alert("Sign in to use AI-powered natural language search!");
+                  openAuthModal('AI Natural Language Search');
                   return;
                 }
                 setSearchMode('nlp');

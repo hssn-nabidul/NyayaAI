@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useJudgeProfile } from '@/features/judges/useJudgeProfile';
 import { Search, Gavel, Sparkles, Scale, Info, Loader2, AlertCircle, ChevronRight, BarChart3, Clock, ExternalLink } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/auth.store';
+import { useAuthModalStore } from '@/lib/stores/auth-modal.store';
 import AuthGate from '@/components/auth/AuthGate';
 import Link from 'next/link';
 
@@ -11,11 +12,16 @@ export default function JudgesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeJudge, setActiveJudge] = useState('');
   const { user } = useAuthStore();
+  const openAuthModal = useAuthModalStore((state) => state.openModal);
 
   const { data, isLoading, error, isFetching } = useJudgeProfile(activeJudge);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      openAuthModal('Judge Analytics');
+      return;
+    }
     if (searchTerm.trim().length >= 3) {
       setActiveJudge(searchTerm.trim());
     }
@@ -184,6 +190,10 @@ export default function JudgesPage() {
                 <button
                   key={t}
                   onClick={() => {
+                    if (!user) {
+                      openAuthModal('Judge Analytics');
+                      return;
+                    }
                     setSearchTerm(t);
                     setActiveJudge(t);
                   }}

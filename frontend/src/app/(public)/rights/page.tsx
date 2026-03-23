@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRights } from '@/features/rights/useRights';
 import { Search, ShieldCheck, Sparkles, Scale, Info, Loader2, AlertCircle, ChevronRight, CheckCircle2, HeartHandshake } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/auth.store';
+import { useAuthModalStore } from '@/lib/stores/auth-modal.store';
 import AuthGate from '@/components/auth/AuthGate';
 
 const PRESET_RIGHTS = [
@@ -19,11 +20,16 @@ export default function RightsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeQuery, setActiveQuery] = useState('');
   const { user } = useAuthStore();
+  const openAuthModal = useAuthModalStore((state) => state.openModal);
 
   const { data, isLoading, error } = useRights(activeQuery);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      openAuthModal('Fundamental Rights Explainer');
+      return;
+    }
     if (searchTerm.trim().length >= 3) {
       setActiveQuery(searchTerm.trim());
     }
@@ -168,6 +174,10 @@ export default function RightsPage() {
                 <button
                   key={t}
                   onClick={() => {
+                    if (!user) {
+                      openAuthModal('Fundamental Rights Explainer');
+                      return;
+                    }
                     setSearchTerm(t);
                     setActiveQuery(t);
                   }}

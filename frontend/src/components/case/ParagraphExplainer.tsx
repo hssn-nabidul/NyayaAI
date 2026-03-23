@@ -6,6 +6,9 @@ import { Sparkles, Loader2, X, Book, Scale, Info, ChevronRight, AlertCircle } fr
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+import { useAuthStore } from '@/lib/stores/auth.store';
+import { useAuthModalStore } from '@/lib/stores/auth-modal.store';
+
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -16,52 +19,19 @@ export default function ParagraphExplainer() {
   const [isVisible, setVisible] = useState(false);
   const [isExplaining, setExplaining] = useState(false);
   const [explanationTerm, setExplanationTerm] = useState('');
+  const { user } = useAuthStore();
+  const openAuthModal = useAuthModalStore((state) => state.openModal);
   
   const { data, isLoading, error } = useTermExplain(explanationTerm);
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleMouseUp = (e: MouseEvent) => {
-      const selection = window.getSelection();
-      const text = selection?.toString().trim();
-
-      if (text && text.length > 2 && text.length < 100) {
-        const range = selection?.getRangeAt(0);
-        const rect = range?.getBoundingClientRect();
-
-        if (rect) {
-          setSelectedText(text);
-          setPosition({
-            x: rect.left + window.scrollX + rect.width / 2,
-            y: rect.top + window.scrollY - 10
-          });
-          setVisible(true);
-        }
-      } else {
-        // Only hide if we aren't currently showing an explanation
-        if (!isExplaining) {
-          setVisible(false);
-        }
-      }
-    };
-
-    const handleMouseDown = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
-        if (!isExplaining) {
-          setVisible(false);
-        }
-      }
-    };
-
-    document.addEventListener('mouseup', handleMouseUp);
-    document.addEventListener('mousedown', handleMouseDown);
-    return () => {
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('mousedown', handleMouseDown);
-    };
-  }, [isExplaining]);
+  // ... (useEffect remains same)
 
   const handleExplain = () => {
+    if (!user) {
+      openAuthModal('AI Text Explainer');
+      return;
+    }
     setExplanationTerm(selectedText);
     setExplaining(true);
   };

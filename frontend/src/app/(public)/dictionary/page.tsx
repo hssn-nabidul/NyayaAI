@@ -10,11 +10,16 @@ export default function DictionaryPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTerm, setActiveTerm] = useState('');
   const { user } = useAuthStore();
+  const openAuthModal = useAuthModalStore((state) => state.openModal);
 
   const { data, isLoading, error, isFetching } = useTermExplain(activeTerm);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      openAuthModal('AI Legal Dictionary');
+      return;
+    }
     if (searchTerm.trim().length >= 2) {
       setActiveTerm(searchTerm.trim());
     }

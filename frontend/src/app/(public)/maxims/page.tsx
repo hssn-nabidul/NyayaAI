@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useMaximExplain } from '@/features/maxims/useMaxims';
 import { Search, BookMarked, Sparkles, Scale, Info, Loader2, AlertCircle, ChevronRight, Quote } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/auth.store';
+import { useAuthModalStore } from '@/lib/stores/auth-modal.store';
 import AuthGate from '@/components/auth/AuthGate';
 
 const COMMON_MAXIMS = [
@@ -19,11 +20,16 @@ export default function MaximsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeMaxim, setActiveMaxim] = useState('');
   const { user } = useAuthStore();
+  const openAuthModal = useAuthModalStore((state) => state.openModal);
 
   const { data, isLoading, error } = useMaximExplain(activeMaxim);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      openAuthModal('Legal Maxims Explainer');
+      return;
+    }
     if (searchTerm.trim().length >= 2) {
       setActiveMaxim(searchTerm.trim());
     }
@@ -171,6 +177,10 @@ export default function MaximsPage() {
                 <button
                   key={t}
                   onClick={() => {
+                    if (!user) {
+                      openAuthModal('Legal Maxims Explainer');
+                      return;
+                    }
                     setSearchTerm(t);
                     setActiveMaxim(t);
                   }}

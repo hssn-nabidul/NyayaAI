@@ -5,6 +5,7 @@ import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import MobileNav from '@/components/layout/MobileNav';
 import { Toaster } from 'sonner';
+import AuthModal from '@/components/auth/AuthModal';
 import AuthProvider from '@/components/auth/AuthProvider';
 import ReactQueryProvider from '@/components/providers/ReactQueryProvider';
 
@@ -39,6 +40,7 @@ export default function RootLayout({
               </div>
             </div>
             <MobileNav />
+            <AuthModal />
             <Toaster position="bottom-right" theme="dark" closeButton />
           </AuthProvider>
         </ReactQueryProvider>
