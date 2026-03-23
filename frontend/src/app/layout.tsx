@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Libre_Baskerville } from 'next/font/google';
+import { Newsreader, Manrope } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
@@ -9,10 +9,19 @@ import AuthModal from '@/components/auth/AuthModal';
 import AuthProvider from '@/components/auth/AuthProvider';
 import ReactQueryProvider from '@/components/providers/ReactQueryProvider';
 
-const libreBaskerville = Libre_Baskerville({
+const newsreader = Newsreader({
   subsets: ['latin'],
-  weight: ['400', '700'],
+  weight: ['400', '500', '600', '700', '800'],
+  style: ['normal', 'italic'],
   variable: '--font-serif',
+  display: 'swap',
+});
+
+const manrope = Manrope({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-sans',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -26,8 +35,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`dark ${libreBaskerville.variable}`}>
-      <body className="bg-ink text-cream selection:bg-gold/30 font-sans">
+    <html lang="en" className={`${newsreader.variable} ${manrope.variable}`}>
+      <body className="bg-parchment text-ink selection:bg-gold/30 font-sans antialiased">
         <ReactQueryProvider>
           <AuthProvider>
             <div className="flex min-h-screen">
@@ -41,7 +50,7 @@ export default function RootLayout({
             </div>
             <MobileNav />
             <AuthModal />
-            <Toaster position="bottom-right" theme="dark" closeButton />
+            <Toaster position="bottom-right" theme="light" closeButton />
           </AuthProvider>
         </ReactQueryProvider>
       </body>

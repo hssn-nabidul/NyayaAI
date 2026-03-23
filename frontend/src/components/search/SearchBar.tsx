@@ -3,6 +3,7 @@
 import React from 'react';
 import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 export default function SearchBar({ className }: { className?: string }) {
   const [query, setQuery] = React.useState('');
@@ -33,22 +34,26 @@ export default function SearchBar({ className }: { className?: string }) {
   return (
     <form 
       onSubmit={handleSearch}
-      className={`relative w-full max-w-2xl mx-auto group ${className}`}
+      className={cn("relative w-full max-w-3xl mx-auto group", className)}
     >
-      <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gold group-focus-within:text-gold transition-colors duration-300 z-10" />
+      <div className="absolute left-6 top-1/2 -translate-y-1/2 z-10">
+        <Search className="w-5 h-5 text-ink/30 group-focus-within:text-gold transition-colors duration-300" />
+      </div>
       <input
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search for cases, citations, or legal topics..."
-        className="w-full bg-ink-2/50 backdrop-blur-xl border border-white/10 text-cream rounded-full py-4 pl-14 pr-32 focus:outline-none focus:ring-1 focus:ring-gold/50 focus:border-gold/50 transition-all duration-300 shadow-2xl placeholder:text-cream/20 font-sans"
+        placeholder="Search cases, citations, or legal topics..."
+        className="w-full bg-parchment border border-divider text-ink rounded-library py-5 pl-16 pr-36 focus:outline-none focus:ring-1 focus:ring-gold focus:border-gold transition-all duration-300 shadow-sm placeholder:text-ink/30 font-sans text-lg"
       />
-      <button
-        type="submit"
-        className="absolute right-3 top-1/2 -translate-y-1/2 bg-gold text-ink px-6 py-2 rounded-full font-bold text-sm hover:bg-gold-light transition-all active:scale-95 duration-200"
-      >
-        Search
-      </button>
+      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+        <button
+          type="submit"
+          className="bg-ink text-parchment px-8 py-2.5 rounded-library font-bold text-sm hover:bg-ink/90 transition-all active:scale-95 duration-200"
+        >
+          Search
+        </button>
+      </div>
     </form>
   );
 }
