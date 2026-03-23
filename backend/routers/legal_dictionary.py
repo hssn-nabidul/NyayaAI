@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from typing import Dict, Any
 from services.gemini import explain_legal_term
 from services.rate_limiter import check_and_increment
@@ -11,12 +11,16 @@ router = APIRouter(
 
 @router.get("/explain")
 async def explain_term(
+    request: Request,
     term: str = Query(..., description="Legal term to explain"),
     current_user: FirebaseUser = Depends(get_current_user)
 ) -> Dict[str, Any]:
     """
     Get an AI-powered explanation for a legal term.
     """
+    print(f"DEBUG dictionary/explain params: {dict(request.query_params)}")
+    print(f"DEBUG headers: {dict(request.headers)}")
+    
     # 1. Check AI Rate Limit
     usage = check_and_increment(current_user.uid)
 
