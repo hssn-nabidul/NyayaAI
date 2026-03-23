@@ -11,4 +11,4 @@ structlog==24.1.0
 firebase-admin==6.5.0
 cachetools==5.3.3
 beautifulsoup4==4.12.3
-lxml==5.2.
+lxml==5.2.1
