@@ -17,13 +17,16 @@ import {
   ExternalLink,
   ChevronRight,
   Gavel,
-  X
+  X,
+  Network,
+  Library
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), {
   ssr: false,
   loading: () => (
-    <div className="h-screen w-full flex items-center justify-center bg-ink">
+    <div className="h-screen w-full flex items-center justify-center bg-parchment">
       <Loader2 size={40} className="text-gold animate-spin" />
     </div>
   ),
@@ -72,84 +75,94 @@ export default function FullScreenGraphPage() {
   const nodeCanvasObject = useCallback((node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
     const label = node.title;
     const fontSize = 12 / globalScale;
-    ctx.font = `${fontSize}px Inter, system-ui, sans-serif`;
+    ctx.font = `bold ${fontSize}px Manrope, system-ui, sans-serif`;
     
     // Draw circle
     ctx.beginPath();
-    ctx.arc(node.x, node.y, 4, 0, 2 * Math.PI, false);
-    ctx.fillStyle = node.type === 'root' ? '#D4A843' : (node.type === 'cites' ? '#5B9CF6' : '#3ECF8E');
+    ctx.arc(node.x, node.y, 5, 0, 2 * Math.PI, false);
+    ctx.fillStyle = node.type === 'root' ? '#B8860B' : (node.type === 'cites' ? '#1A2E44' : '#2D4B33');
     ctx.fill();
+    
+    // Add border
+    ctx.strokeStyle = '#FCF9F4';
+    ctx.lineWidth = 1 / globalScale;
+    ctx.stroke();
     
     // Add glow for root or selected
     if (node.type === 'root' || (selectedNode && node.id === selectedNode.id)) {
-       ctx.shadowColor = node.type === 'root' ? '#D4A843' : '#F2ECD8';
-       ctx.shadowBlur = 15;
+       ctx.shadowColor = node.type === 'root' ? '#B8860B' : '#1A2E44';
+       ctx.shadowBlur = 10;
     } else {
        ctx.shadowBlur = 0;
     }
 
     // Always show labels for root or if zoomed in
-    if (globalScale > 1.5 || node.type === 'root') {
+    if (globalScale > 1.5 || node.type === 'root' || (selectedNode && node.id === selectedNode.id)) {
       const textWidth = ctx.measureText(label).width;
-      const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2);
+      const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.4);
 
-      ctx.fillStyle = 'rgba(11, 12, 15, 0.85)';
-      ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] - 6, bckgDimensions[0], bckgDimensions[1]);
+      ctx.fillStyle = 'rgba(26, 46, 68, 0.95)';
+      ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] - 8, bckgDimensions[0], bckgDimensions[1]);
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = node.type === 'root' ? '#D4A843' : (selectedNode && node.id === selectedNode.id ? '#FFFFFF' : '#F2ECD8');
-      ctx.fillText(label, node.x, node.y - bckgDimensions[1] - 6 + fontSize / 2);
+      ctx.fillStyle = '#FCF9F4';
+      ctx.fillText(label, node.x, node.y - bckgDimensions[1] - 8 + fontSize / 2);
     }
   }, [selectedNode]);
 
   if (isGraphLoading) {
     return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-ink space-y-6">
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-parchment space-y-8">
         <div className="relative">
-          <div className="w-20 h-20 border-4 border-gold/10 rounded-full" />
-          <div className="w-20 h-20 border-4 border-gold border-t-transparent rounded-full animate-spin absolute top-0" />
+          <div className="w-20 h-20 border-4 border-ink/5 rounded-library" />
+          <div className="w-20 h-20 border-4 border-gold border-t-transparent rounded-library animate-spin absolute top-0" />
         </div>
-        <div className="text-center space-y-2">
-          <h2 className="text-gold font-serif text-xl">Mapping Legal Universe</h2>
-          <p className="text-cream/20 text-[10px] font-bold uppercase tracking-[0.3em]">Connecting citations & references</p>
+        <div className="text-center space-y-3">
+          <h2 className="text-ink font-serif text-3xl italic font-bold tracking-tight">Mapping Institutional Universe</h2>
+          <p className="text-ink/20 text-[10px] font-bold uppercase tracking-[0.4em] animate-pulse">Connecting citations & scholarly references</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen w-full bg-ink overflow-hidden relative">
+    <div className="h-screen w-full bg-parchment overflow-hidden relative">
       {/* Top Header Overlay */}
-      <div className="absolute top-0 left-0 right-0 z-20 p-6 flex items-center justify-between pointer-events-none">
-        <div className="flex items-center gap-4 pointer-events-auto">
+      <div className="absolute top-0 left-0 right-0 z-20 p-8 flex items-center justify-between pointer-events-none">
+        <div className="flex items-center gap-6 pointer-events-auto">
           <button 
             onClick={() => router.back()}
-            className="w-12 h-12 rounded-2xl bg-ink-2/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-cream/60 hover:text-gold hover:border-gold/30 transition-all shadow-2xl"
+            className="w-12 h-12 rounded-library bg-ink text-parchment flex items-center justify-center hover:bg-gold transition-all shadow-xl border border-ink/10 group"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
           </button>
-          <div className="bg-ink-2/80 backdrop-blur-md border border-white/10 px-6 py-3 rounded-2xl shadow-2xl">
-            <h1 className="text-gold font-serif text-sm truncate max-w-md">
-              {caseDetail?.title || 'Citation Universe'}
-            </h1>
-            <p className="text-[9px] text-cream/30 uppercase tracking-widest font-bold">Interactive Citation Graph</p>
+          <div className="bg-parchment border border-divider px-8 py-4 rounded-library shadow-2xl flex items-center gap-4">
+            <div className="w-10 h-10 rounded-library bg-ink text-parchment flex items-center justify-center shrink-0">
+               <Network size={20} />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-ink font-serif text-base font-bold italic truncate max-w-lg leading-tight">
+                {caseDetail?.title || 'Citation Universe'}
+              </h1>
+              <p className="text-[9px] text-ink/30 uppercase tracking-[0.2em] font-bold">Interactive Precedential Network</p>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 pointer-events-auto">
-           <div className="hidden md:flex bg-ink-2/80 backdrop-blur-md border border-white/10 p-1 rounded-xl shadow-2xl">
-              <div className="px-3 py-1.5 flex items-center gap-2">
+        <div className="flex items-center gap-3 pointer-events-auto">
+           <div className="hidden md:flex bg-parchment border border-divider p-1 rounded-library shadow-2xl">
+              <div className="px-4 py-2 flex items-center gap-3 border-r border-divider">
                  <div className="w-2 h-2 rounded-full bg-gold" />
-                 <span className="text-[9px] font-bold text-cream/40 uppercase tracking-widest">Root Case</span>
+                 <span className="text-[9px] font-bold text-ink/40 uppercase tracking-widest">Selected Folio</span>
               </div>
-              <div className="px-3 py-1.5 flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-status-blue" />
-                 <span className="text-[9px] font-bold text-cream/40 uppercase tracking-widest">Cites</span>
+              <div className="px-4 py-2 flex items-center gap-3 border-r border-divider">
+                 <div className="w-2 h-2 rounded-full bg-ink" />
+                 <span className="text-[9px] font-bold text-ink/40 uppercase tracking-widest">Cited Record</span>
               </div>
-              <div className="px-3 py-1.5 flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-status-green" />
-                 <span className="text-[9px] font-bold text-cream/40 uppercase tracking-widest">Cited By</span>
+              <div className="px-4 py-2 flex items-center gap-3">
+                 <div className="w-2 h-2 rounded-full bg-forest" />
+                 <span className="text-[9px] font-bold text-ink/40 uppercase tracking-widest">Citing Record</span>
               </div>
            </div>
         </div>
@@ -161,17 +174,17 @@ export default function FullScreenGraphPage() {
         graphData={graphData}
         width={dimensions.width}
         height={dimensions.height}
-        backgroundColor="#0B0C0F"
+        backgroundColor="#FCF9F4"
         nodeLabel={(node: any) => node.title}
         nodeColor={(node: any) => {
-          if (node.type === 'root') return '#D4A843';
-          if (node.type === 'cites') return '#5B9CF6';
-          return '#3ECF8E';
+          if (node.type === 'root') return '#B8860B';
+          if (node.type === 'cites') return '#1A2E44';
+          return '#2D4B33';
         }}
         nodeRelSize={6}
         linkDirectionalArrowLength={4}
         linkDirectionalArrowRelPos={1}
-        linkColor={() => 'rgba(255,255,255,0.08)'}
+        linkColor={() => 'rgba(26, 46, 68, 0.08)'}
         linkWidth={1.5}
         onNodeClick={handleNodeClick}
         nodeCanvasObject={nodeCanvasObject}
@@ -181,101 +194,89 @@ export default function FullScreenGraphPage() {
 
       {/* Side Info Panel */}
       {selectedNode && (
-        <div className="absolute top-24 right-6 bottom-24 w-80 bg-ink-2/95 backdrop-blur-xl border border-white/10 rounded-[2rem] shadow-2xl z-30 p-8 flex flex-col animate-fade-in-right overflow-hidden">
+        <div className="absolute top-24 right-8 bottom-24 w-80 bg-parchment/95 backdrop-blur-xl border border-divider rounded-library shadow-2xl z-30 p-10 flex flex-col animate-fade-up overflow-hidden">
            <button 
              onClick={() => setSelectedNode(null)}
-             className="absolute top-6 right-6 text-cream/20 hover:text-cream transition-colors"
+             className="absolute top-6 right-6 text-ink/20 hover:text-ink transition-colors"
            >
-             <X size={16} />
+             <X size={20} />
            </button>
 
-           <div className="space-y-6 flex-1 overflow-y-auto custom-scrollbar pr-2">
-              <div className="space-y-3">
-                 <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest ${
-                   selectedNode.type === 'root' ? 'bg-gold/10 text-gold' : 
-                   (selectedNode.type === 'cites' ? 'bg-status-blue/10 text-status-blue' : 'bg-status-green/10 text-status-green')
-                 }`}>
-                   {selectedNode.type === 'root' ? 'Selected Case' : (selectedNode.type === 'cites' ? 'Cited in Judgment' : 'Citing this Case')}
+           <div className="space-y-8 flex-1 overflow-y-auto custom-scrollbar pr-2">
+              <div className="space-y-4">
+                 <span className={cn(
+                   "px-2 py-0.5 rounded-library text-[8px] font-bold uppercase tracking-widest border",
+                   selectedNode.type === 'root' ? 'bg-gold-dim text-gold border-gold/20' : 
+                   (selectedNode.type === 'cites' ? 'bg-ink/5 text-ink border-ink/10' : 'bg-forest-dim text-forest border-forest/10')
+                 )}>
+                   {selectedNode.type === 'root' ? 'Selected Archive' : (selectedNode.type === 'cites' ? 'Cited Record' : 'Citing Record')}
                  </span>
-                 <h3 className="text-lg font-serif text-cream leading-tight">
+                 <h3 className="text-xl font-serif text-ink italic font-bold leading-tight">
                    {selectedNode.title}
                  </h3>
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
-                 <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-1">
-                    <p className="text-[9px] text-cream/20 uppercase tracking-widest font-bold">Action</p>
-                    <button 
-                      onClick={() => router.push(`/cases/${selectedNode.id}`)}
-                      className="w-full flex items-center justify-between text-gold hover:text-white transition-colors group"
-                    >
-                       <span className="text-xs font-medium">Open full judgment</span>
-                       <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                    </button>
+              <div className="space-y-6 pt-8 border-t border-divider border-dashed">
+                 <div className="flex items-center gap-2 text-gold">
+                    <Info size={16} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Institutional Context</span>
                  </div>
-              </div>
-
-              <div className="p-6 rounded-2xl bg-white/2 border border-white/5 space-y-4">
-                 <div className="flex items-center gap-2 text-gold/60">
-                    <Info size={14} />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Graph Tip</span>
-                 </div>
-                 <p className="text-xs text-cream/40 leading-relaxed italic">
-                   Nodes are positioned based on their legal relationships. Closer nodes often share more legal principles.
+                 <p className="text-[13px] text-ink/50 leading-relaxed italic font-medium">
+                   This record is linked via direct jurisprudential reference. Clustered nodes represent high conceptual density within the archive.
                  </p>
               </div>
            </div>
 
            <button 
              onClick={() => router.push(`/cases/${selectedNode.id}`)}
-             className="mt-6 w-full py-4 bg-gold text-ink font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-gold-light transition-all shadow-lg shadow-gold/10"
+             className="mt-8 w-full py-4 bg-ink text-parchment font-bold rounded-library flex items-center justify-center gap-3 hover:bg-gold transition-all shadow-md text-[11px] uppercase tracking-widest"
            >
-             <Gavel size={18} />
-             View Details
+             <Gavel size={16} className="text-gold" />
+             Consult Folio
            </button>
         </div>
       )}
 
       {/* Controls Overlay */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-ink-2/80 backdrop-blur-md border border-white/10 p-2 rounded-2xl shadow-2xl z-20">
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-parchment border border-divider p-2 rounded-library shadow-2xl z-20">
          <button 
            onClick={() => graphRef.current?.zoom(graphRef.current.zoom() * 1.5, 400)}
-           className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-cream/60 hover:text-gold transition-colors"
+           className="w-12 h-12 rounded-library bg-parchment-dim hover:bg-ink hover:text-parchment transition-all flex items-center justify-center text-ink/40 shadow-sm"
            title="Zoom In"
          >
            <ZoomIn size={20} />
          </button>
          <button 
            onClick={() => graphRef.current?.zoom(graphRef.current.zoom() / 1.5, 400)}
-           className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-cream/60 hover:text-gold transition-colors"
+           className="w-12 h-12 rounded-library bg-parchment-dim hover:bg-ink hover:text-parchment transition-all flex items-center justify-center text-ink/40 shadow-sm"
            title="Zoom Out"
          >
            <ZoomOut size={20} />
          </button>
-         <div className="w-px h-8 bg-white/10 mx-1" />
+         <div className="w-px h-8 bg-divider mx-1" />
          <button 
            onClick={() => {
              graphRef.current?.centerAt(0, 0, 1000);
              graphRef.current?.zoom(1, 1000);
            }}
-           className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-cream/60 hover:text-gold transition-colors"
+           className="w-12 h-12 rounded-library bg-parchment-dim hover:bg-ink hover:text-parchment transition-all flex items-center justify-center text-ink/40 shadow-sm"
            title="Reset View"
          >
            <Maximize2 size={20} />
          </button>
          <button 
            onClick={() => refetch()}
-           className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-cream/60 hover:text-gold transition-colors"
-           title="Refresh Data"
+           className="w-12 h-12 rounded-library bg-parchment-dim hover:bg-ink hover:text-parchment transition-all flex items-center justify-center text-ink/40 shadow-sm"
+           title="Refresh Archive"
          >
            <RefreshCw size={20} />
          </button>
       </div>
 
       {/* Interaction Hint */}
-      <div className="absolute bottom-10 right-10 flex items-center gap-3 bg-gold/10 border border-gold/20 px-4 py-2 rounded-full backdrop-blur-md animate-fade-up pointer-events-none">
-         <MousePointer2 size={14} className="text-gold" />
-         <span className="text-[10px] font-bold text-gold uppercase tracking-[0.1em]">Drag to pan · Scroll to zoom · Click to inspect</span>
+      <div className="absolute bottom-10 right-10 flex items-center gap-4 bg-parchment border border-divider px-6 py-3 rounded-library shadow-2xl animate-fade-up pointer-events-none">
+         <MousePointer2 size={16} className="text-gold" />
+         <span className="text-[10px] font-bold text-ink uppercase tracking-[0.2em]">Drag: Pan · Scroll: Zoom · Click: Inspect</span>
       </div>
     </div>
   );
