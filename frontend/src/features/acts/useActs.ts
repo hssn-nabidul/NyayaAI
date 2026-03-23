@@ -23,14 +23,22 @@ export interface ExplainResponse {
   related_cases: RelatedCase[];
 }
 
+export interface SectionExplainRequest {
+  act_id: string;
+  section_number: string;
+  section_title: string;
+  section_text: string;
+}
+
 /**
  * AI Explainer only activates on explicit button click.
  * Implements localStorage caching to prevent redundant API calls.
  */
-export function useExplainSection(actSlug: string, sectionNumber: string) {
+export function useExplainSection() {
   return useMutation({
-    mutationFn: async () => {
-      const cacheKey = `section_explain_${actSlug}_${sectionNumber}`;
+    mutationFn: async (request: SectionExplainRequest) => {
+      const { act_id, section_number } = request;
+      const cacheKey = `section_explain_${act_id}_${section_number}`;
       
       // Check localStorage first
       const cachedData = localStorage.getItem(cacheKey);
@@ -43,10 +51,7 @@ export function useExplainSection(actSlug: string, sectionNumber: string) {
       }
 
       // If not cached, call API
-      const response = await apiClient.post<ExplainResponse>(`/acts/explain-section`, {
-        act_slug: actSlug,
-        section_number: sectionNumber
-      });
+      const response = await apiClient.post<ExplainResponse>(`/acts/explain-section`, request);
 
       // Cache result if successful
       if (response) {

@@ -88,7 +88,7 @@ app.include_router(admin.router)
 async def root():
     return {"message": "Nyaya API is running"}
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 async def health_check():
     return {"status": "healthy"}
 

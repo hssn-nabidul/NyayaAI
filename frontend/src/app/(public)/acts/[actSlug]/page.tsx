@@ -96,7 +96,7 @@ export default function ActDetailPage() {
     isPending: isExplaining,
     error: explainError,
     reset: resetExplanation
-  } = useExplainSection(actSlug, activeSection?.number || '');
+  } = useExplainSection();
 
   const [cachedExplanation, setCachedExplanation] = useState<ExplainResponse | null>(null);
 
@@ -111,7 +111,9 @@ export default function ActDetailPage() {
   };
 
   const handleExplainClick = (): void => {
-    const cacheKey = `section_explain_${actSlug}_${activeSection?.number}`;
+    if (!activeSection) return;
+    
+    const cacheKey = `section_explain_${actSlug}_${activeSection.number}`;
     const cached = localStorage.getItem(cacheKey);
     
     if (cached) {
@@ -127,7 +129,13 @@ export default function ActDetailPage() {
 
     setShowExplainer(true);
     if (window.innerWidth < 768) setActiveTab('ai');
-    explainSection();
+    
+    explainSection({
+      act_id: actSlug,
+      section_number: activeSection.number,
+      section_title: activeSection.title,
+      section_text: activeSection.content
+    });
   };
 
   if (!act) {

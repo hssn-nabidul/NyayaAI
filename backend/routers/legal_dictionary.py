@@ -10,8 +10,8 @@ router = APIRouter(
 )
 
 @router.get("/explain")
-async def get_term_explanation(
-    term: str = Query(..., min_length=2),
+async def explain_term(
+    term: str = Query(..., description="Legal term to explain"),
     current_user: FirebaseUser = Depends(get_current_user)
 ) -> Dict[str, Any]:
     """
@@ -19,11 +19,11 @@ async def get_term_explanation(
     """
     # 1. Check AI Rate Limit
     usage = check_and_increment(current_user.uid)
-    
+
     try:
         # 2. Generate explanation using Gemini
         explanation = await explain_legal_term(term)
-        
+
         return {
             "term": term,
             "explanation": explanation,
@@ -32,7 +32,6 @@ async def get_term_explanation(
     except Exception as e:
         print(f"Dictionary explanation failed for {term}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
 @router.get("/search")
 async def search_dictionary(
     q: str = Query(..., min_length=2),
