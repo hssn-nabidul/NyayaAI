@@ -7,7 +7,7 @@ export interface Bookmark {
   title: string;
   court: string;
   date: string;
-  citation: string;
+  citation?: string;
   bookmarked_at: string;
 }
 
@@ -25,12 +25,12 @@ export const useBookmarks = () => {
     }
   }, []);
 
-  const saveToStorage = (newBookmarks: Bookmark[]) => {
+  const saveToStorage = (newBookmarks: Bookmark[]): void => {
     setBookmarks(newBookmarks);
     localStorage.setItem('nyaya_bookmarks', JSON.stringify(newBookmarks));
   };
 
-  const toggleBookmark = (item: Omit<Bookmark, 'bookmarked_at'>) => {
+  const toggleBookmark = (item: Omit<Bookmark, 'bookmarked_at'>): boolean => {
     const exists = bookmarks.find(b => b.doc_id === item.doc_id);
     if (exists) {
       const filtered = bookmarks.filter(b => b.doc_id !== item.doc_id);
@@ -38,7 +38,7 @@ export const useBookmarks = () => {
       return false;
     } else {
       const newList = [
-        { ...item, bookmarked_at: new Date().toISOString() },
+        { ...item, bookmarked_at: new Date().toISOString() } as Bookmark,
         ...bookmarks
       ];
       saveToStorage(newList);
@@ -46,11 +46,11 @@ export const useBookmarks = () => {
     }
   };
 
-  const isBookmarked = (docId: string) => {
+  const isBookmarked = (docId: string): boolean => {
     return bookmarks.some(b => b.doc_id === docId);
   };
 
-  const removeBookmark = (docId: string) => {
+  const removeBookmark = (docId: string): void => {
     const filtered = bookmarks.filter(b => b.doc_id !== docId);
     saveToStorage(filtered);
   };

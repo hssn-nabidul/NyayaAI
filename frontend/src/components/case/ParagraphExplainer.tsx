@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useTermExplain } from '@/features/dictionary/useTermExplain';
-import { Sparkles, Loader2, X, Book, Scale, Info, ChevronRight } from 'lucide-react';
+import { Sparkles, Loader2, X, Book, Scale, Info, ChevronRight, AlertCircle } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 

@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
 import { useUsageStore } from '@/lib/stores/usage.store';
 
+import { SearchResult } from '@/types/api';
+
 export interface JudgeProfile {
   ideological_tendency: string;
   profile_summary: string;
@@ -11,7 +13,7 @@ export interface JudgeProfile {
 export interface JudgeResponse {
   judge_name: string;
   profile: JudgeProfile;
-  recent_judgments: any[];
+  recent_judgments: SearchResult[];
   stats: {
     total_found: number;
   };

@@ -7,6 +7,12 @@ export interface Section {
   content: string;
 }
 
+export interface RelatedCase {
+  title: string;
+  citation: string;
+  relevance: string;
+}
+
 export interface ExplainResponse {
   section: string;
   act: string;
@@ -14,6 +20,7 @@ export interface ExplainResponse {
   key_points: string[];
   illustration: string;
   related_sections: string[];
+  related_cases: RelatedCase[];
 }
 
 /**

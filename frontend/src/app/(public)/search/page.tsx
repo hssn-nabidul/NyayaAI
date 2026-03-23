@@ -11,6 +11,7 @@ import { useAuthStore } from '@/lib/stores/auth.store';
 import { Loader2, Search as SearchIcon, AlertCircle, Sparkles, Filter, Info } from 'lucide-react';
 import Link from 'next/link';
 import { NLPSearchResponse } from '@/features/search/useNLPSearch';
+import { SearchResult } from '@/types/api';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -174,7 +175,7 @@ export default function SearchPage() {
               </div>
               
               <div className="grid grid-cols-1 gap-4">
-                {results.map((result: any) => (
+                {results.map((result: SearchResult) => (
                   <SearchResultCard key={result.doc_id} result={result} />
                 ))}
               </div>

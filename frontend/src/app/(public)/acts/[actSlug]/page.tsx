@@ -2,8 +2,11 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getActBySlug, FullAct, Section } from '@/lib/data/acts/loader';
-import { useExplainSection } from '@/features/acts/useActs';
+import { getActBySlug, FullAct, Section as ActSection } from '@/lib/data/acts/loader';
+import { useExplainSection, ExplainResponse, RelatedCase } from '@/features/acts/useActs';
+
+// Rename imported Section to avoid conflict with local logic if needed
+type Section = ActSection;
 import { 
   Search, 
   ChevronRight, 
@@ -83,7 +86,7 @@ export default function ActDetailPage() {
     }
   }, [activeSection]);
 
-  const toggleChapter = (chap: string) => {
+  const toggleChapter = (chap: string): void => {
     setExpandedChapters(prev => ({ ...prev, [chap]: !prev[chap] }));
   };
 
@@ -95,25 +98,25 @@ export default function ActDetailPage() {
     reset: resetExplanation
   } = useExplainSection(actSlug, activeSection?.number || '');
 
-  const [cachedExplanation, setCachedExplanation] = useState<any>(null);
+  const [cachedExplanation, setCachedExplanation] = useState<ExplainResponse | null>(null);
 
   // Computed explanation source
   const explanation = mutationExplanation || cachedExplanation;
 
-  const handleSectionClick = (section: Section) => {
+  const handleSectionClick = (section: Section): void => {
     setSelectedSectionNumber(section.number);
     resetExplanation();
     setCachedExplanation(null);
     setShowExplainer(false);
   };
 
-  const handleExplainClick = () => {
+  const handleExplainClick = (): void => {
     const cacheKey = `section_explain_${actSlug}_${activeSection?.number}`;
     const cached = localStorage.getItem(cacheKey);
     
     if (cached) {
       try {
-        setCachedExplanation(JSON.parse(cached));
+        setCachedExplanation(JSON.parse(cached) as ExplainResponse);
         setShowExplainer(true);
         if (window.innerWidth < 768) setActiveTab('ai');
         return;
@@ -305,7 +308,7 @@ export default function ActDetailPage() {
                       <h3 className="font-serif text-2xl text-cream">Related Case Law</h3>
                     </div>
                     <div className="grid grid-cols-1 gap-4">
-                      {explanation.related_cases.map((caseItem: any, i: number) => (
+                      {explanation.related_cases.map((caseItem: RelatedCase, i: number) => (
                         <div key={i} className="p-6 bg-white/2 rounded-2xl border border-white/5 hover:border-gold/20 transition-all group">
                           <p className="text-lg font-bold text-gold group-hover:text-cream transition-colors">{caseItem.title}</p>
                           <p className="text-xs text-cream/30 uppercase tracking-widest mt-1 mb-4">{caseItem.citation}</p>

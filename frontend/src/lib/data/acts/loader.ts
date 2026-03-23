@@ -22,28 +22,32 @@ export interface Section {
 
 export interface FullAct {
   title: string;
-  shortTitle: string;
+  shortTitle?: string;
+  short_title?: string;
   year: number;
-  slug: string;
-  category: string;
+  slug?: string;
+  url?: string;
+  category?: string;
+  totalSections?: number;
+  replaces?: string | null;
   sections: Section[];
 }
 
 const ACT_DATA_MAP: Record<string, FullAct> = {
-  'bns-2023': bns2023,
-  'bnss-2023': bnss2023,
-  'bsa-2023': bsa2023,
-  'ipc-1860': ipc1860,
-  'crpc-1973': crpc1973,
-  'evidence-act-1872': evidence1872,
-  'cpc-1908': cpc1908,
-  'contract-act-1872': contract1872,
-  'it-act-2000': it2000,
-  'consumer-protection-2019': consumer2019,
-  'rti-act-2005': rti2005,
-  'pocso-act-2012': pocso2012,
-  'domestic-violence-2005': domestic2005,
-  'constitution-of-india': constitution,
+  'bns-2023': bns2023 as FullAct,
+  'bnss-2023': bnss2023 as FullAct,
+  'bsa-2023': bsa2023 as FullAct,
+  'ipc-1860': ipc1860 as FullAct,
+  'crpc-1973': crpc1973 as FullAct,
+  'evidence-act-1872': evidence1872 as FullAct,
+  'cpc-1908': cpc1908 as FullAct,
+  'contract-act-1872': contract1872 as FullAct,
+  'it-act-2000': it2000 as FullAct,
+  'consumer-protection-2019': consumer2019 as FullAct,
+  'rti-act-2005': rti2005 as FullAct,
+  'pocso-act-2012': pocso2012 as FullAct,
+  'domestic-violence-2005': domestic2005 as FullAct,
+  'constitution-of-india': constitution as FullAct,
 };
 
 export function getActBySlug(slug: string): FullAct | undefined {
