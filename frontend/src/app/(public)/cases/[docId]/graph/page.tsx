@@ -16,7 +16,8 @@ import {
   Info,
   ExternalLink,
   ChevronRight,
-  Gavel
+  Gavel,
+  X
 } from 'lucide-react';
 
 const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), {
