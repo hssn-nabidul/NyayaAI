@@ -39,8 +39,11 @@ class FirebaseUser(BaseModel):
     name: str | None = None
     picture: str | None = None
 
-async def get_current_user(authorization: str = Header(...)) -> FirebaseUser:
+async def get_current_user(authorization: str | None = Header(None)) -> FirebaseUser:
     """Dependency: verifies Firebase ID token and returns user info."""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authentication required. Please sign in.")
+
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Invalid authorization format. Expected 'Bearer <token>'")
 

@@ -10,47 +10,40 @@ router = APIRouter(
 )
 
 class SectionExplainRequest(BaseModel):
-    act_id: str
+    # Support both act_id (new) and act_slug (old)
+    act_id: str | None = None
+    act_slug: str | None = None
     section_number: str
-    section_title: str
-    section_text: str
+    section_title: str | None = ""
+    section_text: str | None = ""
 
 @router.post("/explain-section")
 async def explain_section(
-    request: Request,
+    request: SectionExplainRequest,
     current_user: FirebaseUser = Depends(get_current_user)
 ):
     """Explain a section using AI. Requires authentication."""
     import structlog
     logger = structlog.get_logger()
-
-    try:
-        body = await request.json()
-        print(f"DEBUG explain-section received: {body}")
-        
-        # Manually validate against SectionExplainRequest for debugging
-        req_data = SectionExplainRequest(**body)
-    except Exception as e:
-        print(f"DEBUG explain-section validation failed: {e}")
-        # Still try to extract if possible for partial success
-        try:
-            body = await request.json()
-            req_data = SectionExplainRequest(
-                act_id=body.get("act_id") or body.get("act_slug") or "",
-                section_number=body.get("section_number") or "",
-                section_title=body.get("section_title") or "",
-                section_text=body.get("section_text") or body.get("content") or ""
-            )
-        except:
-            raise HTTPException(status_code=422, detail=f"Validation error: {str(e)}")
     
-    act_id = req_data.act_id
-    section_number = req_data.section_number
+    # Resolve act identifier
+    act_id = request.act_id or request.act_slug
+    if not act_id:
+        raise HTTPException(status_code=422, detail="Missing act identifier (act_id or act_slug)")
+    
+    section_number = request.section_number
     
     logger.info("explain_section_request", act=act_id, section=section_number, user=current_user.uid)
     
-    # We now get the text directly from the request for faster performance and better reliability
-    full_section_text = f"Section {section_number}: {req_data.section_title}\n\n{req_data.section_text}"
+    # If we have the full text, use it. Otherwise, fetch it (backward compatibility)
+    if request.section_text and request.section_title:
+        full_section_text = f"Section {section_number}: {request.section_title}\n\n{request.section_text}"
+    else:
+        # Legacy fallback: fetch details if text not provided by client
+        section = await get_section_details(act_id, section_number)
+        if not section:
+            raise HTTPException(status_code=404, detail="Section text not found.")
+        full_section_text = f"Section {section['number']}: {section['title']}\n\n{section['content']}"
     
     try:
         explanation = await explain_bare_act_section(act_id, full_section_text)
