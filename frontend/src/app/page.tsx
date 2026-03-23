@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/lib/stores/auth.store';
 import SearchBar from '@/components/search/SearchBar';
-import { Scale, BookOpen, Gavel, ShieldCheck, Sparkles } from 'lucide-react';
+import { Scale, BookOpen, Gavel, ShieldCheck, Sparkles, Search } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Home() {
@@ -27,6 +27,26 @@ export default function Home() {
         
         <div className="max-w-3xl mx-auto pt-4">
           <SearchBar className="shadow-2xl shadow-gold/5" />
+        </div>
+
+        {/* Quick Actions (Mobile Only) */}
+        <div className="flex md:hidden items-center gap-3 overflow-x-auto pb-4 pt-2 no-scrollbar px-1">
+          <Link href="/search" className="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-full bg-white/5 border border-white/10 text-cream text-[11px] font-bold uppercase tracking-widest active:bg-gold active:text-ink transition-all">
+            <Search size={14} className="text-gold" />
+            Search Cases
+          </Link>
+          <Link href="/acts" className="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-full bg-white/5 border border-white/10 text-cream text-[11px] font-bold uppercase tracking-widest active:bg-gold active:text-ink transition-all">
+            <BookOpen size={14} className="text-gold" />
+            Bare Acts
+          </Link>
+          <Link href="/rights" className="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-full bg-white/5 border border-white/10 text-cream text-[11px] font-bold uppercase tracking-widest active:bg-gold active:text-ink transition-all">
+            <ShieldCheck size={14} className="text-gold" />
+            Know Your Rights
+          </Link>
+          <Link href="/moot" className="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-full bg-white/5 border border-white/10 text-cream text-[11px] font-bold uppercase tracking-widest active:bg-gold active:text-ink transition-all">
+            <Gavel size={14} className="text-gold" />
+            Moot Prep
+          </Link>
         </div>
       </section>
 

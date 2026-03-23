@@ -3,6 +3,7 @@ import { Libre_Baskerville } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
+import MobileNav from '@/components/layout/MobileNav';
 import { Toaster } from 'sonner';
 import AuthProvider from '@/components/auth/AuthProvider';
 import ReactQueryProvider from '@/components/providers/ReactQueryProvider';
@@ -32,11 +33,12 @@ export default function RootLayout({
               <Sidebar />
               <div className="flex flex-col flex-1 min-w-0">
                 <Navbar />
-                <main className="flex-1 p-4 md:p-8">
+                <main className="flex-1 p-4 md:p-8 pb-24 md:pb-8">
                   {children}
                 </main>
               </div>
             </div>
+            <MobileNav />
             <Toaster position="bottom-right" theme="dark" closeButton />
           </AuthProvider>
         </ReactQueryProvider>

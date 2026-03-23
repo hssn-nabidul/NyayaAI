@@ -22,9 +22,10 @@ const Navbar = () => {
   return (
     <nav className="h-16 border-b border-white/5 bg-ink-2/50 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between px-6">
       <div className="flex items-center gap-4 flex-1">
-        <div className="md:hidden">
-          {/* Mobile Sidebar Toggle */}
-        </div>
+        <Link href="/" className="flex items-center gap-2 md:hidden">
+          <div className="w-8 h-8 bg-gold rounded flex items-center justify-center font-bold text-ink">N</div>
+          <span className="text-xl font-bold tracking-tight serif text-gold">NYAYA</span>
+        </Link>
         <div className="relative max-w-md w-full hidden md:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cream/40" />
           <input 
@@ -40,11 +41,11 @@ const Navbar = () => {
 
       <div className="flex items-center gap-4">
         {user && (
-          <Link href="/bookmarks" className="p-2 hover:bg-white/5 rounded-full transition-colors relative">
+          <Link href="/bookmarks" className="p-2 hover:bg-white/5 rounded-full transition-colors relative hidden md:block">
             <BookMarked className="w-5 h-5 text-cream/60" />
           </Link>
         )}
-        <div className="h-8 w-px bg-white/10 mx-2" />
+        <div className="h-8 w-px bg-white/10 mx-2 hidden md:block" />
         
         {isLoading ? (
           <div className="w-24 h-8 bg-white/5 animate-pulse rounded-full" />
