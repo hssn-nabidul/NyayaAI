@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMaximExplain } from '@/features/maxims/useMaxims';
 import { Search, BookMarked, Sparkles, Scale, Info, Loader2, AlertCircle, ChevronRight, Quote } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/auth.store';
 import { useAuthModalStore } from '@/lib/stores/auth-modal.store';
 import AuthGate from '@/components/auth/AuthGate';
+import { useSearchParams } from 'next/navigation';
 
 const COMMON_MAXIMS = [
   'Audi Alteram Partem',
@@ -17,10 +18,20 @@ const COMMON_MAXIMS = [
 ];
 
 export default function MaximsPage() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get('q') || '';
+  
+  const [searchTerm, setSearchTerm] = useState(initialQuery);
   const [activeMaxim, setActiveMaxim] = useState('');
   const { user } = useAuthStore();
   const openAuthModal = useAuthModalStore((state) => state.openModal);
+
+  // Auto-trigger search if query exists and user is logged in
+  useEffect(() => {
+    if (initialQuery && user) {
+      setActiveMaxim(initialQuery);
+    }
+  }, [initialQuery, user]);
 
   const { data, isLoading, error } = useMaximExplain(activeMaxim);
 

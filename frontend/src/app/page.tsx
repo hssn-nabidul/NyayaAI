@@ -103,7 +103,7 @@ export default function Home() {
         <div className="flex flex-wrap justify-center items-center gap-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
            <span className="font-serif text-lg tracking-widest text-cream">INDIAN KANOON</span>
            <span className="font-sans font-black text-xl tracking-tighter text-cream">Google Gemini</span>
-           <span className="font-serif text-lg italic text-cream">Ministry of Law & Justice</span>
+           <span className="font-serif text-lg italic text-cream">Ministry of Law & Justice Database</span>
         </div>
       </section>
     </div>

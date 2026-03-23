@@ -55,8 +55,12 @@ export default function AuthModal() {
 
         {/* Close Button */}
         <button 
-          onClick={closeModal}
-          className="absolute top-6 right-6 p-2 text-cream/20 hover:text-gold transition-colors hover:bg-white/5 rounded-full"
+          onClick={(e) => {
+            e.stopPropagation();
+            closeModal();
+          }}
+          className="absolute top-6 right-6 p-2 text-cream/20 hover:text-gold transition-colors hover:bg-white/5 rounded-full z-50"
+          aria-label="Close modal"
         >
           <X size={20} />
         </button>

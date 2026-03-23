@@ -1,17 +1,28 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTermExplain } from '@/features/dictionary/useTermExplain';
 import { Search, Book, Sparkles, Scale, Info, Loader2, AlertCircle, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/auth.store';
 import { useAuthModalStore } from '@/lib/stores/auth-modal.store';
 import AuthGate from '@/components/auth/AuthGate';
+import { useSearchParams } from 'next/navigation';
 
 export default function DictionaryPage() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get('q') || '';
+
+  const [searchTerm, setSearchTerm] = useState(initialQuery);
   const [activeTerm, setActiveTerm] = useState('');
   const { user } = useAuthStore();
   const openAuthModal = useAuthModalStore((state) => state.openModal);
+
+  // Auto-trigger search if query exists and user is logged in
+  useEffect(() => {
+    if (initialQuery && user) {
+      setActiveTerm(initialQuery);
+    }
+  }, [initialQuery, user]);
 
   const { data, isLoading, error, isFetching } = useTermExplain(activeTerm);
 
