@@ -26,7 +26,8 @@ import {
   HelpCircle,
   Library,
   ScrollText,
-  FileText
+  FileText,
+  Gavel
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
