@@ -34,9 +34,9 @@ async def perform_search(
         results_data = await search_judgments(
             query=q_clean,
             court=court if court and court != "all" else "all",
-            pagenum=page,
-            fromdate=from_date,
-            todate=to_date
+            from_year=from_year,
+            to_year=to_year,
+            page=page
         )
         
         raw_results = results_data.get("results", [])
@@ -155,9 +155,9 @@ async def nlp_search(
         # results structure: {results, total, page}
         results_data = await search_judgments(
             query=kanoon_query, 
-            pagenum=page,
-            fromdate=from_date,
-            todate=to_date
+            from_year=from_year,
+            to_year=to_year,
+            page=page
         )
         
         raw_results = results_data.get("results", [])

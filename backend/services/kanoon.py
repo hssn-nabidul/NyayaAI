@@ -84,6 +84,6 @@ async def get_doc_meta(doc_id: str) -> dict:
         "date": doc.get("date"),
     }
 
-async def search_by_judge(judge_name: str, pagenum: int = 0) -> dict:
+async def search_by_judge(judge_name: str, page: int = 0) -> dict:
     # Use JUDIS search with judge name
-    return await search_judgments(query=judge_name, page=pagenum)
+    return await search_judgments(query=judge_name, page=page)

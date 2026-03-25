@@ -92,7 +92,7 @@ async def get_cases_for_section(act_slug: str, section_number: str):
     logger.info("fetch_cases_for_section", act=act_slug, section=section_number, query=query)
 
     try:
-        results_data = await search_judgments(query=query, pagenum=0)
+        results_data = await search_judgments(query=query, page=0)
         return {
             "act": act_name,
             "section": section_number,

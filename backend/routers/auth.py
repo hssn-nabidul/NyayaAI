@@ -13,7 +13,7 @@ async def read_current_user(current_user: FirebaseUser = Depends(get_current_use
     Returns user details and current AI usage.
     Used for frontend session verification.
     """
-    usage = get_current_usage(current_user.uid)
+    usage = await get_current_usage(current_user.uid)
     return {
         "uid": current_user.uid,
         "email": current_user.email,

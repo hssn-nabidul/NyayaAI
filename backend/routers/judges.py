@@ -78,7 +78,7 @@ async def get_judge_analytics(
     
     try:
         # 2. Search for judgments by this judge
-        results = await search_by_judge(judge_name, pagenum=0)
+        results = await search_by_judge(judge_name, page=0)
         judgments = results.get("results", [])
         
         if not judgments:
