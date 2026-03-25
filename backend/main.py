@@ -8,9 +8,11 @@ from fastapi.responses import JSONResponse
 import structlog
 from dotenv import load_dotenv
 from pathlib import Path
+from contextlib import asynccontextmanager
+from services.judis_scraper import judis_scraper
 
 # Setup logging
-logger = structlog.get_logger()
+log = structlog.get_logger()
 
 # Load env
 env_path = Path(__file__).parent / '.env'
@@ -18,11 +20,9 @@ load_dotenv(dotenv_path=env_path)
 
 def init_firebase():
     try:
-        # Check if already initialized
         if firebase_admin._apps:
             return
 
-        # Try environment variable first (production/Render)
         sa_json = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
         if sa_json:
             sa_dict = json.loads(sa_json)
@@ -31,7 +31,6 @@ def init_firebase():
             print("Firebase initialized from environment variable")
             return
             
-        # Fallback to file (local development)
         sa_path = Path(__file__).parent / "nyaya-app-9712a-firebase-adminsdk-fbsvc-790c273478.json"
         if sa_path.exists() and sa_path.stat().st_size > 0:
             cred = credentials.Certificate(str(sa_path))
@@ -43,7 +42,6 @@ def init_firebase():
     except Exception as e:
         print(f"Error initializing Firebase: {e}")
 
-# Initialize Firebase before importing routers
 init_firebase()
 
 # Initialize Engine DB
@@ -53,33 +51,12 @@ init_engine_db()
 # Now import routers
 from routers import auth, search, cases, judges, moot, draft, legal_dictionary, analyse, rights, bare_acts, admin, internal_data
 
-from contextlib import asynccontextmanager
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup logic
-    import asyncio
-    from services.scraper import scraper_client
-    
-    # Run canary check in background to not block startup
-    async def canary_check():
-        try:
-            logger.info("canary_check_start", url="https://indiankanoon.org/search/?formInput=kesavananda")
-            result = await scraper_client.search("kesavananda", page=0)
-            source = result.get("source", "unknown")
-            if not result.get("results"):
-                logger.error("canary_check_failed", reason="No results found, DOM structure might have changed", source=source)
-            else:
-                logger.info("canary_check_success", results_found=len(result["results"]), source=source)
-        except Exception as e:
-            logger.error("canary_check_failed", error=str(e))
-            
-    asyncio.create_task(canary_check())
-    
+    log.info("nyaya_startup", source="JUDIS — no API dependency")
     yield
-    
-    # Shutdown logic
-    await scraper_client.close()
+    await judis_scraper.close()
+    log.info("nyaya_shutdown")
 
 app = FastAPI(title="Nyaya API", version="1.0.0", lifespan=lifespan)
 
@@ -96,7 +73,7 @@ app.add_middleware(
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    logger.error("global_crash", path=request.url.path, error=str(exc))
+    log.error("global_crash", path=request.url.path, error=str(exc))
     return JSONResponse(
         status_code=500,
         content={"detail": "Internal Server Error", "error": str(exc)},
