@@ -144,6 +144,23 @@ async def search_judgments(
             cache_service.set("kanoon_cache", cache_key, {"results": scraper_results, "total": ik_total}, ttl_days=7)
         except Exception as e:
             logger.error("scraper_search_failed", error=str(e))
+            
+            # API Fallback for search
+            if KANOON_API_TOKEN:
+                try:
+                    logger.info("api_search_fallback_start", query=query)
+                    headers = {"Authorization": f"Token {KANOON_API_TOKEN}"}
+                    async with httpx.AsyncClient(timeout=15.0) as client:
+                        resp = await client.post(f"{BASE_URL}/search/", 
+                                                params={"formInput": form_input, "pagenum": pagenum},
+                                                headers=headers)
+                        if resp.status_code == 200:
+                            api_data = resp.json()
+                            scraper_results = api_data.get("results", [])
+                            ik_total = api_data.get("total", 0)
+                            logger.info("api_search_fallback_success", count=len(scraper_results))
+                except Exception as api_e:
+                    logger.error("api_search_fallback_failed", error=str(api_e))
 
     # 4. Merge and Deduplicate
     # STRATEGY: 
@@ -258,7 +275,13 @@ async def get_doc_details(docid: str) -> Dict[str, Any]:
     except Exception as e:
         logger.error("jit_scraping_failed", docid=docid, error=str(e))
 
-    # 4. Fallback: If scraper failed, we no longer have an API token fallback to use.
+    # 4. Fallback: If scraper failed, try the API token if available.
+    if KANOON_API_TOKEN:
+        try:
+            return await scraper_client.get_api_document(docid, KANOON_API_TOKEN)
+        except Exception as e:
+            logger.error("api_doc_fallback_failed", docid=docid, error=str(e))
+
     raise Exception(f"Case {docid} could not be retrieved from the archives.")
 
 async def get_doc_meta(docid: str) -> Dict[str, Any]:
@@ -289,7 +312,15 @@ async def get_doc_meta(docid: str) -> Dict[str, Any]:
     cached = cache_service.get("kanoon_cache", f"meta_{docid}")
     if cached: return cached
 
-    # Fallback: Scraper is our only source now
+    # Try API Fallback
+    if KANOON_API_TOKEN:
+        try:
+            data = await scraper_client.get_api_docmeta(docid, KANOON_API_TOKEN)
+            cache_service.set("kanoon_cache", f"meta_{docid}", data, ttl_days=30)
+            return data
+        except Exception as e:
+            logger.error("api_meta_fallback_failed", docid=docid, error=str(e))
+
     return {}
 
 def _extract_author(doc_data: Dict[str, Any]) -> Optional[str]:

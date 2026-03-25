@@ -37,6 +37,13 @@ class NyayaScraper:
             logger.info("scraper_fetch_start", url=url)
             resp = await self.client.get(url, params=params)
             
+            if resp.status_code >= 400:
+                body_snippet = resp.text[:500]
+                logger.error("scraper_http_error", 
+                             status_code=resp.status_code, 
+                             url=str(resp.url),
+                             body=body_snippet)
+            
             if resp.status_code == 429:
                 retry_after = int(resp.headers.get("Retry-After", 5))
                 logger.warning("scraper_rate_limited", retry_after=retry_after)
@@ -248,6 +255,22 @@ class NyayaScraper:
                     "title": title_text
                 })
         return results
+
+    async def get_api_document(self, doc_id: str, api_token: str) -> dict:
+        """Fetch document via Indian Kanoon API (fallback)."""
+        url = f"https://api.indiankanoon.org/doc/{doc_id}/"
+        headers = {"Authorization": f"Token {api_token}"}
+        resp = await self.client.post(url, headers=headers)
+        resp.raise_for_status()
+        return resp.json()
+
+    async def get_api_docmeta(self, doc_id: str, api_token: str) -> dict:
+        """Fetch docmeta via Indian Kanoon API (fallback)."""
+        url = f"https://api.indiankanoon.org/docmeta/{doc_id}/"
+        headers = {"Authorization": f"Token {api_token}"}
+        resp = await self.client.post(url, headers=headers)
+        resp.raise_for_status()
+        return resp.json()
 
     async def close(self):
         await self.client.aclose()
