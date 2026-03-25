@@ -22,7 +22,7 @@ class JudisScraper:
     def __init__(self):
         self.client = httpx.AsyncClient(
             headers=HEADERS,
-            timeout=20.0,
+            timeout=httpx.Timeout(8.0, connect=4.0), # Fail fast if unreachable
             follow_redirects=True,
             verify=False  # JUDIS has SSL cert issues sometimes
         )
