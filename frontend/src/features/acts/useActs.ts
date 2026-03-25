@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
 
 export interface Section {
@@ -11,6 +11,21 @@ export interface RelatedCase {
   title: string;
   citation: string;
   relevance: string;
+}
+
+export interface SectionCase {
+  doc_id: string;
+  title: string;
+  court: string;
+  date: string;
+  headline: string;
+}
+
+export interface SectionCasesResponse {
+  act: string;
+  section: string;
+  total: number;
+  results: SectionCase[];
 }
 
 export interface ExplainResponse {
@@ -28,6 +43,18 @@ export interface SectionExplainRequest {
   section_number: string;
   section_title: string;
   section_text: string;
+}
+
+/**
+ * Fetch actual judgments that interpret or cite a specific bare act section.
+ */
+export function useSectionCases(actSlug: string, sectionNumber: string | null) {
+  return useQuery({
+    queryKey: ['section-cases', actSlug, sectionNumber],
+    queryFn: () => apiClient.get<SectionCasesResponse>(`/acts/${actSlug}/sections/${sectionNumber}/cases`),
+    enabled: !!sectionNumber && !!actSlug,
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours (cases don't change that fast)
+  });
 }
 
 /**

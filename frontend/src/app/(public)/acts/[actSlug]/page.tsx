@@ -3,9 +3,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getActBySlug, FullAct, Section as ActSection } from '@/lib/data/acts/loader';
-import { useExplainSection, ExplainResponse, RelatedCase } from '@/features/acts/useActs';
+import { useExplainSection, useSectionCases, ExplainResponse, RelatedCase, SectionCase } from '@/features/acts/useActs';
 import { useAuthStore } from '@/lib/stores/auth.store';
 import { useAuthModalStore } from '@/lib/stores/auth-modal.store';
+import Link from 'next/link';
 
 // Rename imported Section to avoid conflict with local logic if needed
 type Section = ActSection;
@@ -27,7 +28,8 @@ import {
   Library,
   ScrollText,
   FileText,
-  Gavel
+  Gavel,
+  Database
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -55,6 +57,9 @@ export default function ActDetailPage() {
     if (!act || !selectedSectionNumber) return null;
     return act.sections.find(s => s.number === selectedSectionNumber) || null;
   }, [act, selectedSectionNumber]);
+
+  // Fetch actual real-world cases citing this section
+  const { data: sectionCasesData, isLoading: isLoadingCases } = useSectionCases(actSlug, selectedSectionNumber);
 
   // Group sections by chapter
   const sectionsByChapter = useMemo(() => {
@@ -326,31 +331,53 @@ export default function ActDetailPage() {
                   )}
                 </div>
 
-                {/* RELATED CASES (Bottom of reader) */}
-                {explanation?.related_cases && explanation.related_cases.length > 0 && (
-                  <div className="mt-24 pt-16 border-t border-divider border-dashed space-y-10">
+                {/* REAL WORLD RELATED CASES (Bottom of reader) */}
+                <div className="mt-24 pt-16 border-t border-divider border-dashed space-y-10">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <Gavel size={24} className="text-gold" />
                       <h3 className="font-serif text-3xl text-ink font-bold italic tracking-tight">Institutional Precedents</h3>
                     </div>
+                    {sectionCasesData?.total ? (
+                      <span className="text-[10px] font-bold text-ink/40 uppercase tracking-widest bg-ink/5 px-3 py-1 rounded-library border border-divider">
+                        {sectionCasesData.total.toLocaleString()} Records Found
+                      </span>
+                    ) : null}
+                  </div>
+                  
+                  {isLoadingCases ? (
+                    <div className="p-12 border border-divider rounded-library border-dashed flex flex-col items-center justify-center space-y-4">
+                      <Loader2 size={24} className="text-gold animate-spin" />
+                      <p className="text-[10px] font-bold text-ink/30 uppercase tracking-widest">Searching Archives...</p>
+                    </div>
+                  ) : sectionCasesData?.results && sectionCasesData.results.length > 0 ? (
                     <div className="grid grid-cols-1 gap-6">
-                      {explanation.related_cases.map((caseItem: RelatedCase, i: number) => (
-                        <div key={i} className="p-8 bg-parchment-dim border border-divider rounded-library hover:border-ink/20 transition-all group shadow-sm">
-                          <div className="space-y-2">
-                             <p className="text-xl font-serif font-bold text-ink group-hover:text-gold transition-colors italic">{caseItem.title}</p>
-                             <p className="text-[10px] text-ink/30 font-mono font-bold uppercase tracking-widest flex items-center gap-2">
-                                <FileText size={12} />
-                                {caseItem.citation}
-                             </p>
+                      {sectionCasesData.results.map((caseItem: SectionCase, i: number) => (
+                        <Link key={caseItem.doc_id || i} href={`/cases/${caseItem.doc_id}`} className="block">
+                          <div className="p-8 bg-parchment-dim border border-divider rounded-library hover:border-ink/20 transition-all group shadow-sm">
+                            <div className="space-y-4">
+                               <div className="flex items-center gap-3">
+                                 <span className="text-[9px] font-bold text-gold uppercase tracking-widest bg-gold-dim px-2 py-0.5 rounded-library border border-gold/10">{caseItem.court}</span>
+                                 <span className="text-divider text-[10px]">•</span>
+                                 <span className="text-[9px] font-bold text-ink/40 uppercase tracking-widest">{caseItem.date}</span>
+                               </div>
+                               <p className="text-xl font-serif font-bold text-ink group-hover:text-gold transition-colors italic">{caseItem.title}</p>
+                               {caseItem.headline && (
+                                 <p className="text-[13px] text-ink/60 leading-relaxed font-medium line-clamp-3">
+                                   ...{caseItem.headline.replace(/<\/?b>/g, '')}...
+                                 </p>
+                               )}
+                            </div>
                           </div>
-                          <p className="text-[15px] text-ink/60 leading-relaxed italic border-l-4 border-divider pl-6 mt-6 font-medium">
-                            "{caseItem.relevance}"
-                          </p>
-                        </div>
+                        </Link>
                       ))}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="p-12 border border-divider rounded-library border-dashed text-center">
+                       <p className="text-sm text-ink/40 italic font-serif">No direct precedents indexed for this specific provision.</p>
+                    </div>
+                  )}
+                </div>
 
                 {/* Mobile/Small Screen Explain Button */}
                 <div className="md:hidden pt-12">

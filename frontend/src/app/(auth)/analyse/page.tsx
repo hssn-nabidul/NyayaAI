@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import { useAnalyse } from '@/features/analyse/useAnalyse';
-import { FileSearch, Sparkles, Upload, Loader2, AlertCircle, CheckCircle2, ShieldAlert, Zap, FileText, ChevronRight, Library } from 'lucide-react';
+import { FileSearch, Sparkles, Upload, Loader2, AlertCircle, CheckCircle2, ShieldAlert, Zap, FileText, ChevronRight, Library, MessageSquareQuote } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import DeepAnalysisChat from '@/components/tools/DeepAnalysisChat';
 
 export default function AnalysePage() {
   const [docText, setDocText] = useState('');
@@ -209,6 +210,18 @@ export default function AnalysePage() {
                     </div>
                  </div>
                  <p className="text-[9px] text-ink/20 font-medium uppercase tracking-widest italic">Nyaya Archive Analysis Engine v1.5</p>
+              </div>
+
+              {/* Deep Analysis Streaming Chat */}
+              <div className="pt-12 space-y-6">
+                <div className="flex items-center gap-3 px-4">
+                  <MessageSquareQuote size={20} className="text-gold" />
+                  <div>
+                    <h3 className="text-sm font-serif italic text-ink tracking-wide">Deep Contextual Analysis</h3>
+                    <p className="text-[9px] text-ink/30 uppercase tracking-[0.2em] font-bold">Interactive Scholarly Chat</p>
+                  </div>
+                </div>
+                <DeepAnalysisChat context={docText} />
               </div>
             </div>
           )}

@@ -18,7 +18,7 @@ async def explain_term(
     Get an AI-powered explanation for a legal term.
     """
     # 1. Check AI Rate Limit
-    usage = check_and_increment(current_user.uid)
+    usage = await check_and_increment(current_user.uid)
 
     try:
         # 2. Generate explanation using Gemini

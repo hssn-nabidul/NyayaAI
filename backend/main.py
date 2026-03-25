@@ -46,10 +46,41 @@ def init_firebase():
 # Initialize Firebase before importing routers
 init_firebase()
 
-# Now import routers
-from routers import auth, search, cases, judges, moot, draft, legal_dictionary, analyse, rights, bare_acts, admin
+# Initialize Engine DB
+from engine import init_db as init_engine_db
+init_engine_db()
 
-app = FastAPI(title="Nyaya API", version="1.0.0")
+# Now import routers
+from routers import auth, search, cases, judges, moot, draft, legal_dictionary, analyse, rights, bare_acts, admin, internal_data
+
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic
+    import asyncio
+    from services.scraper import scraper_client
+    
+    # Run canary check in background to not block startup
+    async def canary_check():
+        try:
+            logger.info("canary_check_start", url="https://indiankanoon.org/search/?formInput=kesavananda")
+            result = await scraper_client.search("kesavananda", page=0)
+            if not result.get("results"):
+                logger.error("canary_check_failed", reason="No results found, DOM structure might have changed")
+            else:
+                logger.info("canary_check_success", results_found=len(result["results"]))
+        except Exception as e:
+            logger.error("canary_check_failed", error=str(e))
+            
+    asyncio.create_task(canary_check())
+    
+    yield
+    
+    # Shutdown logic
+    await scraper_client.close()
+
+app = FastAPI(title="Nyaya API", version="1.0.0", lifespan=lifespan)
 
 # Configure CORS
 origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001").split(",")
@@ -83,6 +114,7 @@ app.include_router(analyse.router)
 app.include_router(rights.router)
 app.include_router(bare_acts.router)
 app.include_router(admin.router)
+app.include_router(internal_data.router)
 
 @app.get("/")
 async def root():

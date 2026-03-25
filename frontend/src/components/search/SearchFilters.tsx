@@ -1,113 +1,158 @@
 'use client';
 
 import React from 'react';
-import { Building2, Calendar, Filter, X } from 'lucide-react';
-import { SearchFilters as IFilters } from '@/features/search/useSearch';
+import { Calendar, Building2, Filter, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SearchFilters as IFilters } from '@/features/search/useSearch';
+
+const COURTS = [
+  { label: "All Jurisdictions", value: "all" },
+  { label: "Supreme Court", value: "supremecourt" },
+  { label: "Delhi High Court", value: "delhi" },
+  { label: "Bombay High Court", value: "bombay" },
+  { label: "Madras High Court", value: "madras" },
+  { label: "Calcutta High Court", value: "calcutta" },
+  { label: "Karnataka High Court", value: "karnataka" },
+  { label: "Allahabad High Court", value: "allahabad" },
+  { label: "Gujarat High Court", value: "gujarat" },
+  { label: "Rajasthan High Court", value: "rajasthan" },
+  { label: "Punjab & Haryana", value: "punjab" },
+  { label: "Madhya Pradesh", value: "madhyapradesh" },
+  { label: "Kerala High Court", value: "kerala" },
+  { label: "Andhra High Court", value: "andhra" },
+];
 
 interface SearchFiltersProps {
   filters: IFilters;
   onChange: (filters: IFilters) => void;
+  className?: string;
 }
 
-const COURTS = [
-  { id: 'all', label: 'All Courts' },
-  { id: 'SC', label: 'Supreme Court' },
-  { id: 'DHC', label: 'Delhi High Court' },
-  { id: 'BHC', label: 'Bombay High Court' },
-  { id: 'MHC', label: 'Madras High Court' },
-  { id: 'KHC', label: 'Karnataka High Court' },
-  { id: 'AHC', label: 'Allahabad High Court' },
-];
+export default function SearchFilters({ filters, onChange, className }: SearchFiltersProps) {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  
+  const handleUpdate = (updates: Partial<IFilters>) => {
+    onChange({
+      ...filters,
+      ...updates,
+    });
+  };
 
-export default function SearchFilters({ filters, onChange }: SearchFiltersProps) {
+  const hasActiveFilters = (filters.court && filters.court !== 'all') || filters.from_year || filters.to_year;
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
 
-  const hasFilters = filters.court !== 'all' || filters.from_year || filters.to_year;
+  // Show first 8 courts by default, then the rest under "Show More"
+  const visibleCourts = isExpanded ? COURTS : COURTS.slice(0, 8);
 
   return (
-    <div className="bg-parchment border border-divider rounded-library p-6 space-y-8 h-fit sticky top-24 shadow-sm">
-      <div className="flex items-center justify-between pb-4 border-b border-divider">
-        <div className="flex items-center gap-2 text-ink">
-          <Filter size={14} />
-          <h3 className="text-[10px] font-bold uppercase tracking-widest">Filter Inquiry</h3>
+    <div className={cn("bg-parchment border border-divider rounded-library p-6 shadow-sm space-y-8 sticky top-24", className)}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Filter size={14} className="text-gold" />
+          <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink/40">Archive Filters</h4>
         </div>
-        {hasFilters && (
+        
+        {hasActiveFilters && (
           <button 
             onClick={() => onChange({ court: 'all', from_year: undefined, to_year: undefined })}
-            className="text-[9px] font-bold text-ink/30 hover:text-status-red uppercase tracking-widest transition-colors flex items-center gap-1"
+            className="text-[9px] font-bold text-gold uppercase tracking-widest hover:text-ink transition-colors flex items-center gap-1.5"
           >
-            <X size={10} />
+            <RotateCcw size={10} />
             Reset
           </button>
         )}
       </div>
-
-      {/* Court Filter */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 text-ink/40">
-          <Building2 size={12} />
-          <h4 className="text-[10px] font-bold uppercase tracking-[0.2em]">Judicial Forum</h4>
-        </div>
-        <div className="space-y-1">
-          {COURTS.map((court) => (
-            <button
-              key={court.id}
-              onClick={() => onChange({ ...filters, court: court.id })}
-              className={cn(
-                "w-full text-left px-4 py-2 text-[11px] font-medium transition-all duration-200 rounded-library border-l-2",
-                filters.court === court.id 
-                  ? 'bg-gold-dim text-gold border-gold' 
-                  : 'text-ink/60 hover:text-ink hover:bg-ink/5 border-transparent'
-              )}
+      
+      <div className="space-y-6">
+        {/* Court Select */}
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-[9px] font-bold text-ink/30 uppercase tracking-widest">
+            <Building2 size={10} />
+            Jurisdiction
+          </label>
+          <div className="space-y-1">
+            {visibleCourts.map(c => (
+              <button
+                key={c.value}
+                onClick={() => handleUpdate({ court: c.value })}
+                className={cn(
+                  "w-full text-left px-3 py-2 rounded-library text-xs transition-all border",
+                  (filters.court === c.value || (!filters.court && c.value === 'all'))
+                    ? "bg-ink text-parchment border-ink font-bold shadow-sm"
+                    : "bg-parchment-dim text-ink/60 border-divider hover:bg-parchment hover:text-ink"
+                )}
+              >
+                {c.label}
+              </button>
+            ))}
+            
+            <button 
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="w-full flex items-center justify-center gap-2 py-2 text-[9px] font-bold text-gold uppercase tracking-widest hover:text-ink transition-colors mt-2"
             >
-              {court.label}
+              {isExpanded ? (
+                <>
+                  <ChevronUp size={12} />
+                  Show Fewer
+                </>
+              ) : (
+                <>
+                  <ChevronDown size={12} />
+                  Show All Jurisdictions
+                </>
+              )}
             </button>
-          ))}
+          </div>
         </div>
-      </div>
 
-      {/* Year Range Filter */}
-      <div className="space-y-4 pt-4 border-t border-divider">
-        <div className="flex items-center gap-2 text-ink/40">
-          <Calendar size={12} />
-          <h4 className="text-[10px] font-bold uppercase tracking-[0.2em]">Folio Timeline</h4>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <label className="text-[9px] font-bold text-ink/20 uppercase tracking-widest px-1">From</label>
-            <div className="relative">
-              <select 
+        {/* Date Range */}
+        <div className="space-y-3">
+          <label className="flex items-center gap-2 text-[9px] font-bold text-ink/30 uppercase tracking-widest">
+            <Calendar size={10} />
+            Temporal Scope
+          </label>
+          
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <span className="text-[8px] font-bold text-ink/20 uppercase tracking-tighter ml-1">From</span>
+              <input 
+                type="number"
+                placeholder="1950"
+                min="1950"
+                max={currentYear}
                 value={filters.from_year || ''}
-                onChange={(e) => onChange({ ...filters, from_year: e.target.value ? parseInt(e.target.value) : undefined })}
-                className="w-full bg-parchment-dim border border-divider rounded-library px-3 py-2 text-[11px] text-ink focus:outline-none focus:border-ink/20 appearance-none cursor-pointer"
-              >
-                <option value="">Any</option>
-                {years.map(year => <option key={year} value={year}>{year}</option>)}
-              </select>
+                onChange={(e) => {
+                  const val = e.target.value ? parseInt(e.target.value) : undefined;
+                  handleUpdate({ from_year: val });
+                }}
+                className="w-full bg-parchment-dim border border-divider rounded-library px-3 py-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-gold/20 focus:border-gold/30 font-sans transition-all text-ink placeholder:text-ink/20 shadow-inner"
+              />
             </div>
-          </div>
-          <div className="space-y-2">
-            <label className="text-[9px] font-bold text-ink/20 uppercase tracking-widest px-1">To</label>
-            <div className="relative">
-              <select 
+            
+            <div className="space-y-1.5">
+              <span className="text-[8px] font-bold text-ink/20 uppercase tracking-tighter ml-1">To</span>
+              <input 
+                type="number"
+                placeholder={currentYear.toString()}
+                min="1950"
+                max={currentYear}
                 value={filters.to_year || ''}
-                onChange={(e) => onChange({ ...filters, to_year: e.target.value ? parseInt(e.target.value) : undefined })}
-                className="w-full bg-parchment-dim border border-divider rounded-library px-3 py-2 text-[11px] text-ink focus:outline-none focus:border-ink/20 appearance-none cursor-pointer"
-              >
-                <option value="">Any</option>
-                {years.map(year => <option key={year} value={year}>{year}</option>)}
-              </select>
+                onChange={(e) => {
+                  const val = e.target.value ? parseInt(e.target.value) : undefined;
+                  handleUpdate({ to_year: val });
+                }}
+                className="w-full bg-parchment-dim border border-divider rounded-library px-3 py-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-gold/20 focus:border-gold/30 font-sans transition-all text-ink placeholder:text-ink/20 shadow-inner"
+              />
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="pt-6 border-t border-divider">
-         <p className="text-[9px] text-ink/20 italic leading-relaxed">
-           Subject matter filters are automatically applied based on your inquiry context.
-         </p>
+        {/* Info Box */}
+        <div className="pt-4 border-t border-divider">
+          <p className="text-[9px] text-ink/30 italic leading-relaxed">
+            * Temporal scope applies to the original date of judgment as archived in the National Judicial Data Grid.
+          </p>
+        </div>
       </div>
     </div>
   );

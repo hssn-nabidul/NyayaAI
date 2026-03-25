@@ -16,11 +16,43 @@ Respond ONLY with a valid JSON object. No preamble or markdown fences.
   "key_issues": ["Issue 1?", "Issue 2?", ...],
   "holding": "The court's decision in 2-3 sentences.",
   "area_of_law": ["Tag1", "Tag2"],
-  "significance": "1-2 sentences on legal impact/precedent."
+  "significance": "1-2 sentences on legal impact/precedent.",
+  "precedent_status": "Good Law|Overruled|Distinguished|Landmark",
+  "status_reason": "One sentence explaining why this status was assigned based on its subsequent treatment or inherent nature."
 }}
 
 Judgment text:
 {judgment_text}
+"""
+
+CASE_TIMELINE_PROMPT = """
+You are a legal research assistant for Indian law.
+
+Given this judgment: {case_title} ({year})
+
+1. Identify the primary constitutional/legal issue this case deals with.
+2. List up to 6 landmark Indian cases (including this one) that form the 
+   historical progression of that legal issue, in chronological order.
+3. For THIS specific case, assess its current precedent status:
+   - Good Law / Overruled / Distinguished / Landmark
+
+Respond in JSON only:
+{{
+  "legal_issue": "...",
+  "timeline": [
+    {{
+      "year": 1950,
+      "case_name": "...",
+      "docid": "...",
+      "one_line": "...",
+      "status": "Overruled|Followed|Landmark|Distinguished"
+    }}
+  ],
+  "current_case_status": "Good Law|Overruled|Distinguished|Landmark",
+  "status_reason": "one sentence explanation"
+}}
+
+Note: docid should be a unique identifier if known (like Indian Kanoon ID), or a slug. If unknown, leave as null.
 """
 
 NLP_SEARCH_PROMPT = """
@@ -105,13 +137,20 @@ Term: {term}
 """
 
 JUDGE_PROFILE_PROMPT = """
-Generate a profile for this Indian judge based on judgments.
+Generate a comprehensive intelligence dossier for this Indian judge based on the provided judgment samples.
 Respond ONLY with a valid JSON object. No preamble or markdown fences.
 
 {{
   "ideological_tendency": "Rights-expansive | Textualist | Pragmatist | Conservative | Centrist",
-  "profile_summary": "2-3 sentences on judicial philosophy/significance",
-  "known_for": ["Phrase 1", "Phrase 2"]
+  "ideological_score": 5, // 1 (Highly Conservative/Originalist) to 10 (Highly Liberal/Progressive)
+  "profile_summary": "3-4 sentences detailing their judicial philosophy, legacy, and approach to constitutional or statutory interpretation.",
+  "known_for": ["Key area 1 (e.g., Privacy jurisprudence)", "Key area 2 (e.g., Corporate insolvency)"],
+  "subject_breakdown": {{
+    "Constitutional Law": 40,
+    "Criminal Law": 30,
+    "Civil Law": 20,
+    "Other": 10
+  }} // Estimate percentage breakdown based on the sample cases provided. Must sum to 100.
 }}
 
 Judge: {judge_name}
@@ -151,6 +190,24 @@ Respond ONLY with a valid JSON object. No preamble or markdown fences.
 Text: {doc_text}
 """
 
+AI_CHAT_PROMPT = """
+You are Nyaya AI, a sophisticated Indian legal research assistant. 
+Your goal is to provide deep, scholarly, yet accessible insights into Indian law.
+
+Context/Judgment:
+{context}
+
+User Question:
+{query}
+
+Instructions:
+1. Ground your answer in the provided context if relevant.
+2. Use professional legal terminology but explain complex concepts.
+3. Cite specific articles of the Constitution or sections of Acts where applicable.
+4. If asked about a judgment, focus on the ratio decidendi and its implications.
+5. Format your response with clear headings and bullet points for readability.
+"""
+
 BARE_ACT_EXPLAIN_PROMPT = """
 Explain this Indian Bare Act section for a student.
 Respond ONLY with a valid JSON object. No preamble or markdown fences.
@@ -169,5 +226,24 @@ Respond ONLY with a valid JSON object. No preamble or markdown fences.
 
 Act: {act_name}
 Section: {section_text}
+"""
+
+METADATA_EXTRACTION_PROMPT = """
+Extract structured metadata from this Indian court judgment text.
+Respond ONLY with a valid JSON object. No preamble or markdown fences.
+
+{{
+  "title": "Full Case Title (e.g., Appellant v. Respondent)",
+  "court": "Official Name of the Court (e.g., Supreme Court of India, Delhi High Court)",
+  "case_id": "Official Case Number (e.g., Civil Appeal No. 123 of 2024)",
+  "decision_date": "YYYY-MM-DD",
+  "bench": "Names of presiding judges, comma separated",
+  "appellant": "Name of the appellant/petitioner",
+  "respondent": "Name of the respondent",
+  "citations": ["List of official citations if found, e.g., AIR 2024 SC 1"]
+}}
+
+Judgment text:
+{judgment_text}
 """
 

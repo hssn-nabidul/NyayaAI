@@ -29,6 +29,15 @@ export default function SearchPage() {
     to_year: searchParams.get('to_year') ? parseInt(searchParams.get('to_year')!) : undefined,
   });
 
+  // Sync state with URL when it changes (e.g. back/forward navigation)
+  React.useEffect(() => {
+    setFilters({
+      court: searchParams.get('court') || 'all',
+      from_year: searchParams.get('from_year') ? parseInt(searchParams.get('from_year')!) : undefined,
+      to_year: searchParams.get('to_year') ? parseInt(searchParams.get('to_year')!) : undefined,
+    });
+  }, [searchParams]);
+
   const [searchMode, setSearchMode] = React.useState<'keyword' | 'nlp'>('keyword');
   const [nlpResults, setNlpResults] = React.useState<NLPSearchResponse | null>(null);
 

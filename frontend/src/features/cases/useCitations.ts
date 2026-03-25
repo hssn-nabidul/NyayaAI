@@ -4,8 +4,9 @@ import { apiClient } from '@/lib/api/client';
 export interface CitationNode {
   id: string;
   title: string;
-  type: 'root' | 'cites' | 'citedby';
+  type: 'root' | 'cites' | 'citedby' | 'secondary';
   val: number;
+  year?: number;
 }
 
 export interface CitationLink {

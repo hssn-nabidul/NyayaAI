@@ -6,8 +6,10 @@ import { SearchResult } from '@/types/api';
 
 export interface JudgeProfile {
   ideological_tendency: string;
+  ideological_score: number;
   profile_summary: string;
   known_for: string[];
+  subject_breakdown: Record<string, number>;
 }
 
 export interface JudgeResponse {

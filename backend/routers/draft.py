@@ -24,7 +24,7 @@ async def get_draft_suggestions(
     Get relevant case law suggestions for a draft legal document.
     """
     # 1. Check AI Rate Limit
-    usage = check_and_increment(current_user.uid)
+    usage = await check_and_increment(current_user.uid)
     
     try:
         # 2. Get suggestions using Gemini

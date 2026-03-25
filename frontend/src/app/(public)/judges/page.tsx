@@ -117,29 +117,40 @@ export default function JudgesPage() {
             <div className="space-y-12 animate-fade-up">
               {/* Profile Card */}
               <div className="bg-parchment border border-divider rounded-library p-10 md:p-16 space-y-12 shadow-sm relative overflow-hidden">
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 relative z-10">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-gold">
-                      <Scale size={14} />
-                      <span className="text-[10px] font-bold uppercase tracking-widest">Judicial Profile</span>
-                    </div>
-                    <h2 className="text-4xl md:text-5xl font-serif text-ink tracking-tight italic font-bold">Justice {data.judge_name}</h2>
-                    <div className="flex items-center gap-4 pt-2">
-                      <span className="px-3 py-1 bg-ink text-parchment text-[9px] font-bold uppercase tracking-widest rounded-library shadow-sm">
-                        {typeof data.profile.ideological_tendency === 'string' ? data.profile.ideological_tendency : (data.profile.ideological_tendency as any)?.text || 'Neutral'}
-                      </span>
-                      <span className="text-divider text-xs">•</span>
-                      <span className="text-ink/40 text-[9px] font-bold uppercase tracking-widest">
-                        {data.stats.total_found} Folios Indexed
-                      </span>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 relative z-10">
+                  <div className="flex items-center gap-8">
+                    {data.judge_name && (
+                      <div className="w-32 h-32 shrink-0 rounded-full border-4 border-parchment shadow-xl overflow-hidden bg-ink/5">
+                        <img 
+                          src={`${typeof window !== 'undefined' ? (window.location.origin.includes('localhost:3000') ? 'http://localhost:8000' : window.location.origin) : ''}/judges/photo/${encodeURIComponent(data.judge_name)}`} 
+                          alt={`Justice ${data.judge_name}`} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-gold">
+                        <Scale size={14} />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Judicial Dossier</span>
+                      </div>
+                      <h2 className="text-4xl md:text-5xl font-serif text-ink tracking-tight italic font-bold">Justice {data.judge_name}</h2>
+                      <div className="flex items-center gap-4 pt-2">
+                        <span className="px-3 py-1 bg-ink text-parchment text-[9px] font-bold uppercase tracking-widest rounded-library shadow-sm">
+                          {typeof data.profile.ideological_tendency === 'string' ? data.profile.ideological_tendency : (data.profile.ideological_tendency as any)?.text || 'Neutral'}
+                        </span>
+                        <span className="text-divider text-xs">•</span>
+                        <span className="text-ink/40 text-[9px] font-bold uppercase tracking-widest">
+                          {data.stats.total_found} Folios Indexed
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="h-px bg-divider border-dashed border-t" />
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10">
-                  <div className="md:col-span-2 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-12 relative z-10">
+                  <div className="md:col-span-7 space-y-8">
                     <div className="space-y-4">
                       <h4 className="text-[10px] font-bold uppercase tracking-widest text-gold flex items-center gap-2">
                          <Library size={12} />
@@ -149,18 +160,61 @@ export default function JudgesPage() {
                         "{typeof data.profile.profile_summary === 'string' ? data.profile.profile_summary : (data.profile.profile_summary as any)?.text || 'Summary unavailable.'}"
                       </p>
                     </div>
+
+                    {/* Ideological Compass */}
+                    {data.profile.ideological_score !== undefined && (
+                      <div className="space-y-4 pt-4">
+                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-ink/40">Judicial Compass (Originalist vs Purposive)</h4>
+                        <div className="relative h-2 bg-divider rounded-full w-full max-w-md">
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0.5 h-4 bg-ink/20" />
+                          <div 
+                            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-gold rounded-full shadow-md border-2 border-parchment transition-all duration-1000"
+                            style={{ left: `calc(${(data.profile.ideological_score / 10) * 100}% - 8px)` }}
+                          />
+                        </div>
+                        <div className="flex justify-between max-w-md text-[9px] font-bold text-ink/40 uppercase tracking-widest">
+                          <span>Conservative / Textualist</span>
+                          <span>Liberal / Expansive</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="space-y-6">
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-gold">Key Scholarly Focus</h4>
-                    <ul className="space-y-4">
-                      {data.profile.known_for.map((item: any, i: number) => (
-                        <li key={i} className="flex items-start gap-3 text-[13px] text-ink/60 font-medium leading-relaxed">
-                          <div className="w-1.5 h-1.5 rounded-full bg-gold mt-1.5 shrink-0" />
-                          <span>{typeof item === 'string' ? item : item?.text || String(item)}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="md:col-span-5 space-y-8">
+                    <div className="space-y-6">
+                      <h4 className="text-[10px] font-bold uppercase tracking-widest text-gold">Key Scholarly Focus</h4>
+                      <ul className="space-y-4">
+                        {data.profile.known_for?.map((item: any, i: number) => (
+                          <li key={i} className="flex items-start gap-3 text-[13px] text-ink/60 font-medium leading-relaxed">
+                            <div className="w-1.5 h-1.5 rounded-full bg-gold mt-1.5 shrink-0" />
+                            <span>{typeof item === 'string' ? item : item?.text || String(item)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Subject Breakdown Chart */}
+                    {data.profile.subject_breakdown && Object.keys(data.profile.subject_breakdown).length > 0 && (
+                      <div className="space-y-4 pt-6 border-t border-divider border-dashed">
+                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-gold">Subject Matter Expertise</h4>
+                        <div className="space-y-3">
+                          {Object.entries(data.profile.subject_breakdown).map(([subject, percentage], i) => (
+                            <div key={subject} className="space-y-1">
+                              <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                                <span className="text-ink/60">{subject}</span>
+                                <span className="text-ink">{Number(percentage)}%</span>
+                              </div>
+                              <div className="h-1.5 w-full bg-divider rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-ink/80 rounded-full" 
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

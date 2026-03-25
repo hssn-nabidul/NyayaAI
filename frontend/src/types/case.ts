@@ -17,4 +17,21 @@ export interface CaseSummary {
   holding: string;
   area_of_law: string[];
   significance: string;
+  precedent_status?: 'Good Law' | 'Overruled' | 'Distinguished' | 'Landmark';
+  status_reason?: string;
+}
+
+export interface TimelineEvent {
+  year: number;
+  case_name: string;
+  docid: string | null;
+  one_line: string;
+  status: string;
+}
+
+export interface CaseTimeline {
+  legal_issue: string;
+  timeline: TimelineEvent[];
+  current_case_status: string;
+  status_reason: string;
 }

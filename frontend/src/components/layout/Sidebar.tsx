@@ -16,7 +16,8 @@ import {
   Languages,
   ScrollText,
   FileText,
-  LayoutDashboard
+  LayoutDashboard,
+  BarChart3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/lib/stores/auth.store';
@@ -37,6 +38,7 @@ const phases = [
     items: [
       { icon: Languages, label: 'Legal Dictionary', href: '/dictionary' },
       { icon: ScrollText, label: 'Bare Acts', href: '/acts' },
+      { icon: BarChart3, label: 'Judge Analytics', href: '/judges' },
       { icon: Scale, label: 'Legal Maxims', href: '/maxims' },
       { icon: ShieldCheck, label: 'Know Your Rights', href: '/rights' },
     ]

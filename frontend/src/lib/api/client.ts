@@ -85,6 +85,64 @@ class ApiClient {
     });
     return this.handleResponse<T>(response);
   }
+
+  async stream(
+    path: string, 
+    body: any, 
+    onChunk: (chunk: string) => void,
+    onEvent?: (event: string, data: any) => void,
+    options: RequestInit = {}
+  ): Promise<void> {
+    const headers = await this.getHeaders();
+    const response = await fetch(`${this.baseUrl}${path}`, {
+      method: 'POST',
+      ...options,
+      headers: { ...headers, ...options.headers },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new ApiError(response.status, 'Streaming failed');
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error('No reader available');
+
+    const decoder = new TextDecoder();
+    let partialLine = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = (partialLine + chunk).split('\n');
+      partialLine = lines.pop() || '';
+
+      let currentEvent = 'message';
+
+      for (const line of lines) {
+        if (line.startsWith('event: ')) {
+          currentEvent = line.replace('event: ', '').trim();
+        } else if (line.startsWith('data: ')) {
+          const data = line.replace('data: ', '').trim();
+          
+          if (currentEvent === 'message') {
+            onChunk(data);
+          } else {
+            try {
+              const parsedData = JSON.parse(data);
+              onEvent?.(currentEvent, parsedData);
+            } catch (e) {
+              onEvent?.(currentEvent, data);
+            }
+          }
+          // Reset event to message after processing data
+          currentEvent = 'message';
+        }
+      }
+    }
+  }
 }
 
 export const apiClient = new ApiClient();

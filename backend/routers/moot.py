@@ -25,7 +25,7 @@ async def get_moot_prep(
     Generate structured moot court arguments.
     """
     # 1. Check AI Rate Limit
-    usage = check_and_increment(current_user.uid)
+    usage = await check_and_increment(current_user.uid)
     
     try:
         # 2. Generate arguments using Gemini

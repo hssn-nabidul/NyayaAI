@@ -18,7 +18,7 @@ async def get_right_explanation(
     Explain a fundamental right in simple terms.
     """
     # 1. Check AI Rate Limit
-    usage = check_and_increment(current_user.uid)
+    usage = await check_and_increment(current_user.uid)
     
     try:
         # 2. Explain using Gemini

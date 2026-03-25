@@ -9,30 +9,32 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.37.1",
+    "@types/d3-force": "^3.0.10",
+    "clsx": "^2.1.1",
+    "d3-force": "^3.0.0",
+    "firebase": "^10.11.1",
+    "framer-motion": "^11.2.4",
+    "lucide-react": "^0.378.0",
     "next": "14.2.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "typescript": "^5.4.5",
-    "firebase": "^10.11.1",
-    "@tanstack/react-query": "^5.37.1",
-    "zustand": "^4.5.2",
-    "framer-motion": "^11.2.4",
     "react-force-graph-2d": "^1.25.4",
     "react-markdown": "^9.0.1",
     "react-syntax-highlighter": "^15.5.0",
     "sonner": "^1.4.41",
-    "zod": "^3.23.8",
-    "clsx": "^2.1.1",
     "tailwind-merge": "^2.3.0",
-    "lucide-react": "^0.378.0"
+    "typescript": "^5.4.5",
+    "zod": "^3.23.8",
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
-    "tailwindcss": "^3.4.3",
-    "autoprefixer": "^10.4.19",
-    "postcss": "^8.4.38",
-    "@types/react": "^18.3.2",
     "@types/node": "^20.12.12",
+    "@types/react": "^18.3.2",
+    "autoprefixer": "^10.4.19",
     "eslint": "^8.57.0",
-    "eslint-config-next": "14.2.3"
+    "eslint-config-next": "14.2.3",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3"
   }
 }

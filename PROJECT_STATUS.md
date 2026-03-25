@@ -1,20 +1,21 @@
 # Nyaya Project Status Report
 
-**Date:** March 19, 2026
+**Date:** March 25, 2026
 **Project:** Nyaya - AI-Powered Indian Legal Research App
 
 ---
 
 ## 1. BACKEND (Python FastAPI)
 
-The backend provides all legal data endpoints and AI integrations.
+The backend provides all legal data endpoints and AI integrations, optimized for high performance, reliability, and independence from external API rate limits.
 
 ### API Endpoints
 | Method | Path | Protected | Description |
 |---|---|---|---|
 | **GET** | `/search/` | Public | Standard keyword search for judgments. |
 | **POST** | `/search/nlp` | Protected | AI-powered natural language search. |
-| **GET** | `/cases/{docid}` | Public | Fetch full judgment text and metadata. |
+| **GET** | `/cases/{docid}` | Public | Fetch full judgment text (via JIT Scraper). |
+| **GET** | `/cases/{docid}/timeline` | Public | **[NEW]** AI-generated legal case timeline. |
 | **POST** | `/cases/{docid}/summary` | Protected | Generate AI summary for a case. |
 | **GET** | `/cases/{docid}/citations` | Public | Fetch citation network data. |
 | **POST** | `/analyse/` | Protected | AI breakdown of legal documents. |
@@ -28,102 +29,63 @@ The backend provides all legal data endpoints and AI integrations.
 | **GET** | `/acts/{act_slug}` | Public | Full text and TOC for a specific act. |
 | **GET** | `/acts/{act_slug}/sections/{section}` | Public | Section details and related case search. |
 | **POST** | `/acts/{act_slug}/sections/{section}/explain` | Protected | AI explanation of a specific section. |
-| **GET** | `/auth/me` | Protected | Retrieve current user profile. |
 
-*Note: Protected endpoints require a valid Firebase ID token and are subject to usage limits via `Depends(get_current_user)`.*
-
-### Service Functions
-*   **`services/gemini.py`:** `_clean_json_response`, `summarize_judgment`, `extract_search_params`, `generate_judge_profile`, `explain_legal_term`, `prepare_moot_arguments`, `analyse_legal_document`, `explain_fundamental_right`, `suggest_draft_cases`, `explain_bare_act_section`.
-*   **`services/kanoon.py`:** `search_judgments`, `search_by_judge`, `get_doc_details`, `get_doc_meta`, `get_cites`, `get_citedby`, `_extract_citation`, `_extract_author`.
-*   **`services/bare_acts.py`:** `get_all_acts`, `get_act_details`, `search_in_act`, `get_section_details`, `fetch_and_cache_act`.
-*   **`services/rate_limiter.py`:** `init_db`, `check_and_increment`, `get_current_usage`.
-*   **`services/firebase_auth.py`:** `get_current_user`.
-
-### Pydantic Models
-*   `FirebaseUser`: Defines `uid`, `email`, `name`, `picture` (located in `services/firebase_auth.py`).
+### Core Infrastructure & Dependency Bypassing
+*   **JIT Scraper (Just-In-Time Ingestion):** To bypass IndianKanoon API rate limits and token costs, a custom JIT scraper has been implemented. When a document is requested, the system first checks the internal SQLite store, then attempts a direct scrape of the source DOM. This results in 0-cost retrieval for previously accessed or publicly available cases.
+*   **Internal Data Corpus:** Every JIT-scraped case is automatically ingested into our background `InternalJudgment` database (SQLite), creating a growing offline repository of Indian Law.
+*   **Bare Acts Optimization:** Now reads directly from local JSON files in `frontend/src/data/acts`, completely removing the need for external API calls for statutory research.
+*   **Deployment Ready:** Added support for loading Firebase credentials from `FIREBASE_SERVICE_ACCOUNT_JSON` environment variable (Render-compatible).
+*   **Scraper Health:** Implemented background `canary_check` on startup to monitor IndianKanoon DOM changes.
 
 ---
 
 ## 2. FRONTEND (Next.js Web Dashboard)
 
-The web frontend is the primary active focus and interacts closely with the backend via React Query.
+The web dashboard has undergone a major visual and structural transformation, focusing on "Modern Law Library" aesthetics and professional legal tooling.
 
-### Page Routes (`src/app/`)
-*   **Public:** `/` (Home), `/search`, `/cases/[docId]`, `/cases/[docId]/graph`, `/dictionary`, `/dictionary/[term]`, `/judges`, `/maxims`, `/maxims/[id]`, `/rights`, `/rights/[situation]`, `/auth/signin`.
-*   **Protected (`(auth)/`):** `/analyse`, `/bookmarks`, `/draft`, `/moot`, `/settings`.
+### Key Features
+*   **Case Timeline:** A high-fidelity visual timeline of the legal issue's history, from trial court origins to final appellate decisions, generated via Gemini 1.5 Pro.
+*   **UI/UX Overhaul:** High-contrast, serif-first design inspired by modern legal publications.
+*   **Mobile-First:** Complete overhaul of mobile responsiveness, including a specialized mobile navigation system.
+*   **Auth Gates:** Implemented high-fidelity `AuthModal` to gate AI features, ensuring a seamless upgrade path for users.
 
-### Core Components (`src/components/`)
-*   **Auth:** `AIUsageMeter`, `AuthGate`, `GoogleSignInButton`, `UserMenu`, `AuthProvider`.
-*   **Case Details:** `CitationGraphPanel`, `ParagraphExplainer`, `CaseMetadataHeader`, `AISummaryPanel`, `CaseActionBar`, `JudgmentReader`.
-*   **Search:** `SearchResultCard`, `SearchFilters`, `NLPSearchBox`, `SearchBar`, `SearchResultSkeleton`.
-*   **AI Tools:** `DocumentAnalyser`, `DraftEditor`, `DraftSuggestionSidebar`, `MootPrepForm`, `MootPrepResult`.
-*   **Dictionary/Rights:** `AIExplainer`, `MaximCard`, `MaximDetail`, `TermCard`, `TermDetail`, `RightsChatBox`, `RightsDetail`, `SituationCard`.
-
-*All components are actively implemented and wired to Zustand/React Query logic. No empty UI shells remain.*
-
-### Active API Hook Integrations (`src/features/`)
-*   `useSearch` -> `GET /search/`
-*   `useNLPSearch` -> `POST /search/nlp`
-*   `useCase` -> `GET /cases/{docid}`
-*   `useCaseSummary` -> `POST /cases/{docid}/summary`
-*   `useCitations` -> `GET /cases/{docid}/citations`
-*   `useAnalyse` -> `POST /analyse/`
-*   `useDraftSuggest` -> `POST /draft/suggest`
-*   `useJudgeProfile` -> `GET /judges/{judge_name}`
-*   `useMoot` -> `POST /moot/prep`
-*   `useRights` -> `GET /rights/explain`
-*   `useTermExplain` -> `GET /dictionary/explain`
+### Core Technical Updates
+*   **Error Handling:** Implemented global `error.tsx` boundary and safe rendering logic to handle complex AI response objects (React Error #31 fix).
+*   **Type Safety:** Consolidated search result types and improved Zod schema validation across all forms.
 
 ---
 
 ## 3. FLUTTER APP
 
-The mobile app is officially **On Hold** while the web dashboard is prioritized.
-
-*   **Dart Files:** `app/lib/main.dart` only.
-*   **Widgets:** Contains only the default Flutter `MyApp` and `MyHomePage` (Counter App).
-*   **Feature Folders:** The intended feature-first architecture (`lib/features/`) has not been scaffolded yet.
+The mobile app remains officially **On Hold** while the web dashboard is prioritized. No significant updates since March 19.
 
 ---
 
-## 4. FEATURE RATINGS
+## 4. FEATURE RATINGS (Updated)
 
-*   ✅ **Search & NLP Search (Web/API):** Fully working end to end.
-*   ✅ **Case Reader & Summarization (Web/API):** Fully working end to end.
-*   ✅ **AI Power Tools (Moot, Draft, Analyse):** Fully working end to end.
-*   🔄 **Citation Graph:** Partially implemented (Backend delivers nodes/links; Frontend `CitationGraphPanel` is dynamically imported to avoid SSR issues, but visualization refinement is ongoing).
-*   🔄 **Bookmarks & User Settings:** Partially implemented (UI exists, stores exist, but backend lacks explicit CRUD tables for user profiles).
-*   ⬜ **Flutter Mobile App:** File exists but empty/scaffold only.
-
----
-
-## 5. ACTIVE ISSUES
-
-*   **Flutter `build.gradle.kts` and `CMakeLists.txt`:** Standard generated `TODO` comments indicating missing Application IDs, signing configs, and ephemeral file movement.
+*   ✅ **Search & NLP Search (Web/API):** Fully working end to end with Court and Date filters.
+*   ✅ **JIT Scraper & API Bypass:** Successfully fetching documents directly from source without API dependency.
+*   ✅ **Gemini Response Streaming:** **[NEW]** Real-time AI streaming implemented for Deep Analysis Chat, significantly improving perceived speed.
+*   ✅ **Case Timeline:** Fully functional AI-driven timeline visualization.
+*   ✅ **Bare Acts Reader:** Optimized with local data; significantly faster and more reliable.
+*   ✅ **AI Power Tools (Moot, Draft, Analyse):** Fully working with high-fidelity Auth gating.
+*   ✅ **Mobile UX:** Fully responsive and overhauled for the "Modern Law Library" aesthetic.
+*   🔄 **Citation Graph:** UI visualization refinement ongoing.
+*   🔄 **Bookmarks & Persistence:** UI exists; Backend storage for bookmarks is currently being scoped for SQLite/Production-Migration.
+*   ⬜ **Flutter Mobile App:** Scaffold only.
 
 ---
 
-## 6. DEPENDENCIES
+## 5. NEW UTILITIES (Scripts)
 
-### Backend (`requirements.txt`)
-*   **Installed & Used:** `fastapi`, `uvicorn`, `httpx`, `google-generativeai`, `pydantic`, `pydantic-settings`, `python-dotenv`, `slowapi`, `structlog`, `firebase-admin`, `cachetools`.
-*   *All packages appear fully utilized by the service logic.*
-
-### Frontend (`package.json`)
-*   **Installed & Used:** `next`, `react`, `react-dom`, `firebase`, `@tanstack/react-query`, `zustand`, `framer-motion`, `react-force-graph-2d`, `react-markdown`, `lucide-react`, `sonner`, `zod`.
-*   **Flagged (Potentially underutilized):** `react-syntax-highlighter` is installed but likely only necessary if Moot Prep / Document Analyser responses start emitting heavy markdown code blocks.
-
-### Flutter (`pubspec.yaml`)
-*   Standard dependencies only (`flutter`, `cupertino_icons`).
+Located in `scripts/` and `backend/`:
+*   `pdf_to_act_json.py`: Converts raw legal PDF files (BNS, BNSS, BSA) into structured JSON.
+*   `scrape_indiacode.py`: Specialized scraper for extracting bare acts from IndiaCode.
+*   `test_jit.py`: Dedicated testing suite for the JIT scraping and caching layer.
 
 ---
 
-## 7. ENVIRONMENT
+## 6. ACTIVE ISSUES & TODOs
 
-### Backend (`backend/.env`)
-*   Keys: `GEMINI_API_KEY`, `KANOON_API_TOKEN`, `FIREBASE_PROJECT_ID`, `ENVIRONMENT`, `DAILY_AI_REQUESTS_PER_USER`, `ALLOWED_ORIGINS`.
-*   *Note: All referenced successfully in Python via `os.getenv`.*
-
-### Frontend (`frontend/.env.local`)
-*   Keys: `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`, `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID`, `NEXT_PUBLIC_API_URL`.
-*   *Note: All standard Firebase config keys are present and mapped.*
+*   **Database Persistence:** Implement a persistent storage solution (Redis or Persistent Volume) for Render deployments, as the current SQLite storage is ephemeral.
+*   **Citation Refinement:** Improve the extraction of citations from judgment text for better graph accuracy.
