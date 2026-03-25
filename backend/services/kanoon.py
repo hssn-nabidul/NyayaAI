@@ -12,6 +12,7 @@ import hashlib
 import json
 import structlog
 import asyncio
+from services.scraper import scraper_client
 
 logger = structlog.get_logger()
 
@@ -20,7 +21,6 @@ env_path = Path(__file__).parent.parent / '.env'
 load_dotenv(dotenv_path=env_path)
 
 KANOON_API_TOKEN = os.getenv("KANOON_API_TOKEN")
-BASE_URL = "https://api.indiankanoon.org"
 
 # Mapping of our court codes to Indian Kanoon doctypes
 COURT_MAPPING = {
@@ -88,11 +88,9 @@ async def search_judgments(
         
         for r in raw_internal:
             title = r["title"]
-            # Filter out very low quality results from internal DB
             if not title or title.lower() in ["unknown", "unknown title", "null"]:
                 continue
             
-            # Clean up old "Auto-Scraped Case" titles if any remain in DB
             if "Auto-Scraped Case" in title:
                 title = title.replace("Auto-Scraped Case", "Case").strip()
 
@@ -117,13 +115,12 @@ async def search_judgments(
     if fromdate: form_input += f" fromdate: {fromdate}"
     if todate: form_input += f" todate: {todate}"
     
-    # Check simple cache - Added V2 to force refresh after scraper improvements
     cache_key_raw = f"search_v2|{form_input}|{pagenum}"
     cache_key = hashlib.md5(cache_key_raw.encode()).hexdigest()
     
     cached = cache_service.get("kanoon_cache", cache_key)
     
-    # 3. Get Scraper Results (if not cached)
+    # 3. Get Scraper/API Results (if not cached)
     scraper_results = []
     ik_total = 0
     if cached:
@@ -131,7 +128,7 @@ async def search_judgments(
         ik_total = cached.get("total", 0)
     else:
         try:
-            from services.scraper import scraper_client
+            # Now handles automatic API fallback internally
             scraper_result = await scraper_client.search(form_input, page=pagenum)
             scraper_results = scraper_result.get("results", [])
             ik_total = scraper_result.get("total", 0)
@@ -140,38 +137,14 @@ async def search_judgments(
                 if not r.get("citation"):
                     r["citation"] = _extract_citation(r)
                     
-            # Cache for 7 days
             cache_service.set("kanoon_cache", cache_key, {"results": scraper_results, "total": ik_total}, ttl_days=7)
         except Exception as e:
-            logger.error("scraper_search_failed", error=str(e))
-            
-            # API Fallback for search
-            if KANOON_API_TOKEN:
-                try:
-                    logger.info("api_search_fallback_start", query=query)
-                    headers = {"Authorization": f"Token {KANOON_API_TOKEN}"}
-                    async with httpx.AsyncClient(timeout=15.0) as client:
-                        resp = await client.post(f"{BASE_URL}/search/", 
-                                                params={"formInput": form_input, "pagenum": pagenum},
-                                                headers=headers)
-                        if resp.status_code == 200:
-                            api_data = resp.json()
-                            scraper_results = api_data.get("results", [])
-                            ik_total = api_data.get("total", 0)
-                            logger.info("api_search_fallback_success", count=len(scraper_results))
-                except Exception as api_e:
-                    logger.error("api_search_fallback_failed", error=str(api_e))
+            logger.error("external_search_failed", error=str(e))
 
     # 4. Merge and Deduplicate
-    # STRATEGY: 
-    # 1. Scraper results are the source of truth for titles/court in search view.
-    # 2. Internal results are only added if they don't exist in the scraper's current page.
-    # 3. We use the IK ID (tid) for deduplication.
-    
     seen_ids = set()
     final_results = []
 
-    # Add scraper results first
     for r in scraper_results:
         tid = str(r.get("doc_id", ""))
         if not tid: continue
@@ -183,13 +156,11 @@ async def search_judgments(
             
         final_results.append(r)
 
-    # Add internal results ONLY if they are truly unique and not low-quality placeholders
     for r in internal_results:
         internal_id = str(r["doc_id"])
         if internal_id in seen_ids:
             continue
             
-        # If the internal record has a generic title, it's likely a partial ingest
         if r["title"].startswith("Case ") or r["court"].lower() == "unknown court":
             continue
             
@@ -203,8 +174,8 @@ async def search_judgments(
     }
 
 async def get_doc_details(docid: str) -> Dict[str, Any]:
-    """Fetch full judgment text with JIT ingestion."""
-    # 1. Check Internal Store first (try both prefixed and unprefixed and source_url)
+    """Fetch full judgment text with JIT ingestion and automatic API fallback."""
+    # 1. Check Internal Store first
     db = SessionLocal()
     internal = None
     try:
@@ -221,7 +192,6 @@ async def get_doc_details(docid: str) -> Dict[str, Any]:
 
         if internal:
             title = internal.title
-            # If the stored title is low quality, ignore internal and force a fresh scrape
             if not title or "Auto-Scraped Case" in title or title.startswith("Case "):
                 logger.info("internal_low_quality_title_refetch", doc_id=docid, title=title)
             else:
@@ -250,17 +220,15 @@ async def get_doc_details(docid: str) -> Dict[str, Any]:
     if cached:
         return cached
 
-    # 3. Trigger JIT Scraper
+    # 3. Trigger JIT Scraper (with automatic API fallback)
     try:
-        from services.scraper import scraper_client
         result = await scraper_client.get_document(docid)
         if not result.get("citation"):
             result["citation"] = _extract_citation(result)
             
-        # Cache for 30 days
         cache_service.set("kanoon_cache", cache_key, result, ttl_days=30)
         
-        # Trigger background internal DB ingestion so our offline corpus grows
+        # Trigger background internal DB ingestion
         from engine.scrapers.supreme_court import SupremeCourtScraper
         import threading
         def background_ingest():
@@ -273,19 +241,11 @@ async def get_doc_details(docid: str) -> Dict[str, Any]:
 
         return result
     except Exception as e:
-        logger.error("jit_scraping_failed", docid=docid, error=str(e))
-
-    # 4. Fallback: If scraper failed, try the API token if available.
-    if KANOON_API_TOKEN:
-        try:
-            return await scraper_client.get_api_document(docid, KANOON_API_TOKEN)
-        except Exception as e:
-            logger.error("api_doc_fallback_failed", docid=docid, error=str(e))
-
-    raise Exception(f"Case {docid} could not be retrieved from the archives.")
+        logger.error("jit_retrieval_failed", docid=docid, error=str(e))
+        raise Exception(f"Case {docid} could not be retrieved from the archives.")
 
 async def get_doc_meta(docid: str) -> Dict[str, Any]:
-    """Fetch metadata with internal store support."""
+    """Fetch metadata with internal store and API fallback support."""
     db = SessionLocal()
     try:
         internal = db.query(InternalJudgment).filter(
@@ -308,14 +268,12 @@ async def get_doc_meta(docid: str) -> Dict[str, Any]:
     finally:
         db.close()
 
-    # Fallback to cache/external
     cached = cache_service.get("kanoon_cache", f"meta_{docid}")
     if cached: return cached
 
-    # Try API Fallback
     if KANOON_API_TOKEN:
         try:
-            data = await scraper_client.get_api_docmeta(docid, KANOON_API_TOKEN)
+            data = await scraper_client.get_api_docmeta(docid)
             cache_service.set("kanoon_cache", f"meta_{docid}", data, ttl_days=30)
             return data
         except Exception as e:
@@ -345,7 +303,6 @@ async def _fetch_cites_graph(docid: str) -> Dict[str, Any]:
         return cached
         
     try:
-        from services.scraper import scraper_client
         result = await scraper_client.get_citations(docid)
         logger.info("scraper_cites_result", doc_id=docid, cites=len(result.get("cites", [])), cited_by=len(result.get("cited_by", [])))
         cache_service.set("kanoon_cache", cache_key, result, ttl_days=14)
@@ -364,20 +321,16 @@ async def get_citedby(docid: str) -> Dict[str, Any]:
 
 async def search_by_judge(judge_name: str, pagenum: int = 0) -> Dict[str, Any]:
     """Search for judgments by a specific judge."""
-    # 1. Try strict author search
     query = f"author: {judge_name}"
     results = await search_judgments(query=query, pagenum=pagenum)
     
-    # 2. If no results, try without middle initials or prefixes
     if not results.get("results") or results.get("total") == 0:
-        # Simplify "Abhay S. Oka" -> "Abhay Oka"
         simplified = " ".join([p for p in judge_name.replace(".", "").split() if len(p) > 1])
         if simplified != judge_name:
             logger.info("retry_simplified_judge_search", original=judge_name, simplified=simplified)
             query = f"author: {simplified}"
             results = await search_judgments(query=query, pagenum=pagenum)
             
-    # 3. If still nothing, try a general keyword search
     if not results.get("results") or results.get("total") == 0:
         logger.info("retry_keyword_judge_search", judge=judge_name)
         results = await search_judgments(query=judge_name, pagenum=pagenum)

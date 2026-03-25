@@ -66,10 +66,11 @@ async def lifespan(app: FastAPI):
         try:
             logger.info("canary_check_start", url="https://indiankanoon.org/search/?formInput=kesavananda")
             result = await scraper_client.search("kesavananda", page=0)
+            source = result.get("source", "unknown")
             if not result.get("results"):
-                logger.error("canary_check_failed", reason="No results found, DOM structure might have changed")
+                logger.error("canary_check_failed", reason="No results found, DOM structure might have changed", source=source)
             else:
-                logger.info("canary_check_success", results_found=len(result["results"]))
+                logger.info("canary_check_success", results_found=len(result["results"]), source=source)
         except Exception as e:
             logger.error("canary_check_failed", error=str(e))
             
