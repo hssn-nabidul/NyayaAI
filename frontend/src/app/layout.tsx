@@ -27,6 +27,12 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   title: 'Nyaya Web — Free Legal Research for India',
   description: 'AI-powered legal research platform for Indian law students and citizens.',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+  },
 };
 
 export default function RootLayout({

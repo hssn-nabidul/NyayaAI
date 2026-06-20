@@ -1,15 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useAnalyseStream } from '@/features/analyse/useAnalyseStream';
+import { useAnalyseStream, AnalyseResponse } from '@/features/analyse/useAnalyseStream';
 import ReactMarkdown from 'react-markdown';
 import { Send, Loader2, Sparkles, MessageSquare, Bot, User, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface DeepAnalysisChatProps {
   context: string;
+  /**
+   * Optional structured analysis result from POST /analyse/.
+   * When provided, follow-up stream messages use the compressed analysis
+   * as context (~500-1,000 chars) instead of the full raw document text (~10,000 chars).
+   * This saves ~90% tokens on follow-up queries.
+   */
+  analysis?: AnalyseResponse['analysis'];
 }
 
-export default function DeepAnalysisChat({ context }: DeepAnalysisChatProps) {
-  const { stream, data, isLoading, error, reset } = useAnalyseStream();
+export default function DeepAnalysisChat({ context, analysis }: DeepAnalysisChatProps) {
+  const { stream, data, isLoading, error, reset } = useAnalyseStream(analysis);
   const [query, setQuery] = useState('');
   const [history, setHistory] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);

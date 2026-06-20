@@ -7,6 +7,7 @@ import { Search, BookMarked, User } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/auth.store';
 import { signInWithGoogle } from '@/lib/firebase/auth';
 import UserMenu from '@/components/auth/UserMenu';
+import { determineSearchRoute } from '@/lib/search-router';
 import { cn } from '@/lib/utils';
 
 const Navbar = () => {
@@ -16,7 +17,8 @@ const Navbar = () => {
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      const route = determineSearchRoute(searchQuery);
+      router.push(route.path);
     }
   };
 

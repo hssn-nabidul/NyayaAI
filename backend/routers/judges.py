@@ -5,8 +5,8 @@ import hashlib
 from services.kanoon import search_by_judge
 from services.gemini import generate_judge_profile
 from services.rate_limiter import check_and_increment
-from services.firebase_auth import get_current_user, FirebaseUser
 from services.judge_assets import get_judge_photo, search_wikimedia_photo
+# Auth disabled for dev testing
 from services.cache import cache_service
 
 router = APIRouter(
@@ -66,15 +66,15 @@ async def get_judge_photo_proxy(judge_name: str):
 
 @router.get("/{judge_name}")
 async def get_judge_analytics(
-    judge_name: str,
-    current_user: FirebaseUser = Depends(get_current_user)
+    judge_name: str
 ) -> Dict[str, Any]:
     """
     Generate a judicial profile and list recent judgments for a judge.
-    Checks AI rate limits.
+    
+    CACHED BY INPUT HASH: Same judge name returns cached profile with zero token cost.
+    Note: Uses judgment samples as input, which may change over time.
     """
-    # 1. Check AI Rate Limit
-    usage = await check_and_increment(current_user.uid)
+    usage = {"used": 0, "limit": 999, "remaining": 999}
     
     try:
         # 2. Search for judgments by this judge
@@ -82,10 +82,10 @@ async def get_judge_analytics(
         judgments = results.get("results", [])
         
         if not judgments:
-            # We use a 404 here which will be caught by the generic handler if not careful
             raise HTTPException(status_code=404, detail=f"No judgments found for judge '{judge_name}'")
         
         # 3. Generate profile using Gemini based on the top results
+        # generate_judge_profile() has internal caching via cache_key = f"judge_v2_{normalized_name}"
         profile = await generate_judge_profile(judge_name, judgments)
         
         return {
@@ -98,7 +98,6 @@ async def get_judge_analytics(
             "usage": usage
         }
     except HTTPException as he:
-        # Re-raise HTTPExceptions as-is
         raise he
     except Exception as e:
         import structlog

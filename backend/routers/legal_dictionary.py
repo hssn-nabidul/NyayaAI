@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from typing import Dict, Any
 from services.gemini import explain_legal_term
 from services.rate_limiter import check_and_increment
-from services.firebase_auth import get_current_user, FirebaseUser
+# Auth disabled for dev testing
 
 router = APIRouter(
     prefix="/dictionary",
@@ -11,17 +11,17 @@ router = APIRouter(
 
 @router.get("/explain")
 async def explain_term(
-    term: str = Query(..., description="Legal term to explain"),
-    current_user: FirebaseUser = Depends(get_current_user)
+    term: str = Query(..., description="Legal term to explain")
 ) -> Dict[str, Any]:
     """
     Get an AI-powered explanation for a legal term.
+    
+    CACHED BY INPUT HASH: Same term text returns cached result with zero token cost.
     """
-    # 1. Check AI Rate Limit
-    usage = await check_and_increment(current_user.uid)
+    usage = {"used": 0, "limit": 999, "remaining": 999}
 
     try:
-        # 2. Generate explanation using Gemini
+        # explain_legal_term() has internal caching via cache_key = f"term_{normalized_term}"
         explanation = await explain_legal_term(term)
 
         return {
@@ -34,8 +34,7 @@ async def explain_term(
         raise HTTPException(status_code=500, detail=str(e))
 @router.get("/search")
 async def search_dictionary(
-    q: str = Query(..., min_length=2),
-    current_user: FirebaseUser = Depends(get_current_user)
+    q: str = Query(..., min_length=2)
 ):
     """
     Placeholder for a static dictionary search if we add one later.

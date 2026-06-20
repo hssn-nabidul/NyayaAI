@@ -7,18 +7,28 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 SUMMARY_PROMPT = """
-You are an Indian legal research assistant helping law students.
-Analyse this court judgment and produce a structured JSON summary.
-Respond ONLY with a valid JSON object. No preamble or markdown fences.
+You are a senior Indian law librarian creating a structured case brief for a law student or junior lawyer.
+Analyze this judgment and produce a comprehensive JSON summary.
+
+This summary will later be used AS THE ENTIRE CONTEXT for follow-up Q&A, so include every legally relevant detail.
+
+Respond ONLY with valid JSON. No preamble or markdown.
 
 {{
-  "plain_summary": "3-4 sentences in plain English for non-lawyers.",
-  "key_issues": ["Issue 1?", "Issue 2?", ...],
-  "holding": "The court's decision in 2-3 sentences.",
-  "area_of_law": ["Tag1", "Tag2"],
-  "significance": "1-2 sentences on legal impact/precedent.",
-  "precedent_status": "Good Law|Overruled|Distinguished|Landmark",
-  "status_reason": "One sentence explaining why this status was assigned based on its subsequent treatment or inherent nature."
+  "plain_summary": "2-3 sentence plain-English overview for non-lawyers.",
+  "case_facts_brief": "2-3 sentences on the key facts giving rise to the dispute.",
+  "key_issues": ["Precise legal question(s) the court had to decide"],
+  "ratio_decidendi": "The core legal principle that was necessary for the decision — most important part for law students.",
+  "obiter_dicta": ["Significant observations not essential to the decision"],
+  "holding": "How the court resolved each key issue, including specific orders passed.",
+  "dissenting_opinion": "Summary of any minority view, or 'Unanimous' if none.",
+  "area_of_law": ["Constitutional Law", "Criminal Procedure", etc.],
+  "statutes_interpreted": ["All sections/acts the court interpreted, e.g. Article 21, Section 302 IPC"],
+  "precedent_status": "Good Law | Overruled | Distinguished | Landmark",
+  "status_reason": "One sentence why this status was assigned.",
+  "practical_takeaway": "What a lawyer or student should learn from this case in practice.",
+  "case_law_referenced": ["Key precedents discussed or relied upon (case names)"],
+  "significance": "1-2 sentences on this case's place in Indian jurisprudence."
 }}
 
 Judgment text:
@@ -76,7 +86,7 @@ Student description:
 
 MOOT_PREP_PROMPT = """
 You are a senior Indian moot court coach. Generate structured arguments grounded in case law.
-Respond ONLY with a valid JSON object. No preamble or markdown fences.
+Respond ONLY with valid JSON.
 
 {{
   "petitioner": {{
@@ -101,7 +111,7 @@ Side: {side}
 
 DRAFT_SUGGEST_PROMPT = """
 You are an Indian legal assistant. Suggest relevant cases for this draft.
-Respond ONLY with a valid JSON object. No preamble or markdown fences.
+Respond ONLY with valid JSON.
 
 {{
   "detected_arguments": ["Argument 1"],
@@ -123,7 +133,7 @@ Limit: {max_suggestions} suggestions.
 
 DICTIONARY_PROMPT = """
 Explain this Indian legal term/maxim clearly for a student.
-Respond ONLY with a valid JSON object. No preamble or markdown fences.
+Respond ONLY with valid JSON.
 
 {{
   "term": "Term",
@@ -138,7 +148,7 @@ Term: {term}
 
 JUDGE_PROFILE_PROMPT = """
 Generate a comprehensive intelligence dossier for this Indian judge based on the provided judgment samples.
-Respond ONLY with a valid JSON object. No preamble or markdown fences.
+Respond ONLY with valid JSON.
 
 {{
   "ideological_tendency": "Rights-expansive | Textualist | Pragmatist | Conservative | Centrist",
@@ -160,7 +170,7 @@ Sample: {judgments_sample}
 
 RIGHTS_PROMPT = """
 Explain this Indian fundamental right for a layperson.
-Respond ONLY with a valid JSON object. No preamble or markdown fences.
+Respond ONLY with valid JSON.
 
 {{
   "right_name": "The Right",
@@ -191,21 +201,53 @@ Text: {doc_text}
 """
 
 AI_CHAT_PROMPT = """
-You are Nyaya AI, a sophisticated Indian legal research assistant. 
-Your goal is to provide deep, scholarly, yet accessible insights into Indian law.
+You are a senior Indian legal research assistant.
+Answer concisely. Ground answers in the CONTEXT provided.
 
-Context/Judgment:
+CONTEXT:
 {context}
 
-User Question:
+QUERY:
 {query}
 
-Instructions:
-1. Ground your answer in the provided context if relevant.
-2. Use professional legal terminology but explain complex concepts.
-3. Cite specific articles of the Constitution or sections of Acts where applicable.
-4. If asked about a judgment, focus on the ratio decidendi and its implications.
-5. Format your response with clear headings and bullet points for readability.
+RULES:
+1. Ground answers in the context. If info is missing, say so.
+2. Cite articles/sections/precedents from the context.
+3. Discuss ratio decidendi where relevant — assume legally trained user.
+4. Use headings and bullet points for readability.
+"""
+
+ANALYSE_STREAM_FIRST_PROMPT = """
+You are a senior Indian legal analyst. Analyse the legal document below and answer the query.
+
+DOCUMENT:
+{context}
+
+QUESTION:
+{query}
+
+RULES:
+1. Cite specific clauses, sections, or provisions from the document.
+2. Flag potential risks if the query is about risk assessment.
+3. Use headings and bullet points.
+4. Be precise and concise — for legal professionals.
+"""
+
+ANALYSE_STREAM_FOLLOWUP_PROMPT = """
+You are a senior Indian legal analyst. Answer the query based on the STRUCTURED ANALYSIS below.
+Do NOT claim you have the full document — you only have this structured brief.
+
+STRUCTURED ANALYSIS:
+{analysis_context}
+
+QUESTION:
+{query}
+
+RULES:
+1. Ground your answer in the structured analysis above.
+2. Cite specific clauses, risks, or points mentioned in the analysis.
+3. Use headings and bullet points.
+4. Be precise and concise — for legal professionals.
 """
 
 BARE_ACT_EXPLAIN_PROMPT = """
@@ -246,4 +288,113 @@ Respond ONLY with a valid JSON object. No preamble or markdown fences.
 Judgment text:
 {judgment_text}
 """
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CASE CHAT (Streaming Q&A about a specific judgment)
+# ─────────────────────────────────────────────────────────────────────────────
+
+CASE_CHAT_FIRST_PROMPT = """
+You are a senior Indian legal research assistant helpling a law student.
+You have the FULL judgment text below. Produce a comprehensive brief.
+
+JUDGMENT TEXT:
+{judgment_text}
+
+---
+
+CONVERSATION:
+{history}
+
+---
+
+USER:
+{query}
+
+RULES:
+1. This is the FIRST interaction. If query is empty or "summarize", produce a comprehensive brief:
+   - Plain English summary, key facts, key issues, ratio decidendi, holding, obiter dicta
+   - Area of law, statutes interpreted, precedent status, practical takeaway
+2. Use headings and bullet points for readability.
+3. Be concise and legally precise.
+"""
+
+CASE_CHAT_FOLLOWUP_PROMPT = """
+You are a senior Indian legal research assistant helping a law student.
+You have a STRUCTURED CASE SUMMARY below. Use it to answer follow-up questions.
+Do NOT claim you have the full judgment text — you only have the structured brief.
+
+STRUCTURED CASE SUMMARY:
+{structured_summary}
+
+---
+
+CONVERSATION:
+{history}
+
+---
+
+USER:
+{query}
+
+RULES:
+1. Ground every answer in the structured summary above.
+2. Discuss ratio decidendi, obiter dicta, and practical implications where relevant.
+3. Cite statutes, articles, and precedents mentioned in the summary.
+4. Use headings and bullet points.
+5. Be concise and legally precise.
+"""
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SIMILAR CASES (AI-powered thematic similarity search)
+# ─────────────────────────────────────────────────────────────────────────────
+
+SIMILAR_CASES_PROMPT = """
+You are a senior Indian legal research librarian with encyclopedic knowledge of Indian case law.
+
+Analyze the following judgment and find thematically similar cases that a legal researcher should read alongside it.
+Focus on cases that share the same LEGAL PRINCIPLES, CONSTITUTIONAL ISSUES, or STATUTORY INTERPRETATION questions — NOT just cases that are directly cited.
+
+JUDGMENT TITLE: {case_title}
+
+JUDGMENT EXCERPT:
+{judgment_excerpt}
+
+---
+
+INSTRUCTIONS:
+1. First, identify the core legal themes, principles, and constitutional/statutory issues in this case.
+2. Generate 2-3 optimized search queries for Indian Kanoon that would surface thematically similar cases. Each query should be 5-10 words.
+3. List up to 8 landmark Indian cases that share the same legal themes, organized by relevance. These should go BEYOND the cases directly cited in the judgment.
+4. For each suggested case, explain WHY it is thematically related — what specific principle or issue it shares.
+
+Respond ONLY with a valid JSON object. No preamble or markdown fences.
+
+{{
+  "thematic_analysis": {{
+    "primary_area": "Primary area of law (e.g., Constitutional Law, Criminal Procedure)",
+    "core_principles": ["List of 3-5 key legal principles or issues"],
+    "relevant_statutes": ["Relevant acts/sections identified"],
+    "thematic_summary": "2-3 sentence summary of what this case is fundamentally about"
+  }},
+  "search_queries": [
+    {{
+      "query": "5-10 word search query for Indian Kanoon",
+      "rationale": "Why this query would find related cases"
+    }}
+  ],
+  "similar_cases": [
+    {{
+      "title": "Full case name",
+      "year": 2024,
+      "court": "Supreme Court of India | High Court",
+      "citation": "Known citation if available",
+      "doc_id": "Indian Kanoon doc ID if known, otherwise null",
+      "shared_principle": "The specific legal principle or issue this case shares with the source judgment",
+      "relevance_score": 0.95,
+      "reasoning": "2-3 sentence explanation of how this case is thematically related, what principle it establishes, and why a researcher should read it alongside the source judgment"
+    }}
+  ]
+}}
+"""
+
 

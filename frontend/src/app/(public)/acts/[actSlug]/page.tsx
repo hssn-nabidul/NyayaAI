@@ -4,8 +4,6 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getActBySlug, FullAct, Section as ActSection } from '@/lib/data/acts/loader';
 import { useExplainSection, useSectionCases, ExplainResponse, RelatedCase, SectionCase } from '@/features/acts/useActs';
-import { useAuthStore } from '@/lib/stores/auth.store';
-import { useAuthModalStore } from '@/lib/stores/auth-modal.store';
 import Link from 'next/link';
 
 // Rename imported Section to avoid conflict with local logic if needed
@@ -37,9 +35,6 @@ export default function ActDetailPage() {
   const params = useParams();
   const actSlug = params.actSlug as string;
   const router = useRouter();
-  const { user } = useAuthStore();
-  const openAuthModal = useAuthModalStore((state) => state.openModal);
-  
   // Layout Management
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<'contents' | 'text' | 'ai'>('contents');
@@ -121,11 +116,6 @@ export default function ActDetailPage() {
   const handleExplainClick = (): void => {
     if (!activeSection) return;
 
-    if (!user) {
-      openAuthModal('AI Legal Explainer');
-      return;
-    }
-    
     const cacheKey = `section_explain_${actSlug}_${activeSection.number}`;
     const cached = typeof window !== 'undefined' ? localStorage.getItem(cacheKey) : null;
     

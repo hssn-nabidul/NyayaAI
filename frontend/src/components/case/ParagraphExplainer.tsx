@@ -3,8 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTermExplain } from '@/features/dictionary/useTermExplain';
 import { Sparkles, Loader2, X, Book, Scale, Info, ChevronRight, AlertCircle, Library, Gavel } from 'lucide-react';
-import { useAuthStore } from '@/lib/stores/auth.store';
-import { useAuthModalStore } from '@/lib/stores/auth-modal.store';
 import { cn } from '@/lib/utils';
 
 export default function ParagraphExplainer() {
@@ -13,8 +11,6 @@ export default function ParagraphExplainer() {
   const [isVisible, setVisible] = useState(false);
   const [isExplaining, setExplaining] = useState(false);
   const [explanationTerm, setExplanationTerm] = useState('');
-  const { user } = useAuthStore();
-  const openAuthModal = useAuthModalStore((state) => state.openModal);
   
   const { data, isLoading, error } = useTermExplain(explanationTerm);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -60,10 +56,6 @@ export default function ParagraphExplainer() {
   }, [isExplaining]);
 
   const handleExplain = () => {
-    if (!user) {
-      openAuthModal('AI Text Explainer');
-      return;
-    }
     setExplanationTerm(selectedText);
     setExplaining(true);
   };

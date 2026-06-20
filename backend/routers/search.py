@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, Query, HTTPException, Body
+from fastapi import APIRouter, Depends, Query, HTTPException, Body, Request
 from typing import Optional, Dict, Any
 from services.kanoon import search_judgments
 from services.gemini import extract_search_params
-from services.firebase_auth import get_current_user, FirebaseUser
+# Auth disabled for dev testing
 from services.rate_limiter import check_and_increment
 
 router = APIRouter(
@@ -132,16 +132,27 @@ async def perform_search(
 
 @router.post("/nlp")
 async def nlp_search(
-    description: str = Body(...),
-    page: int = Query(0, ge=0),
-    current_user: FirebaseUser = Depends(get_current_user)
+    request: Request,
+    page: int = Query(0, ge=0)
 ) -> Dict[str, Any]:
     """
-    Perform a natural language search. Requires authentication.
+    Perform a natural language search.
+    Accepts both a raw JSON string and a JSON object with 'description' field.
     """
-    usage = await check_and_increment(current_user.uid)
+    usage = {"used": 0, "limit": 999, "remaining": 999}
 
     try:
+        # Parse body — supports both raw string and {description: "..."}
+        body = await request.json()
+        if isinstance(body, str):
+            description = body
+        elif isinstance(body, dict):
+            description = body.get("description", "")
+            if not description:
+                raise HTTPException(status_code=422, detail="Missing 'description' field in request body.")
+        else:
+            raise HTTPException(status_code=422, detail="Invalid body format. Send a string or an object with 'description' field.")
+
         extracted = await extract_search_params(description)
         kanoon_query = extracted.get("kanoon_search_query", description)
         

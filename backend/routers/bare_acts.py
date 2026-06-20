@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
-from services.bare_acts import get_section_details, get_act_details
+from services.bare_acts import get_section_details, get_act_details, get_all_acts
 from services.gemini import explain_bare_act_section
-from services.firebase_auth import get_current_user, FirebaseUser
+# Auth disabled for dev testing
 from services.kanoon import search_judgments
 
 router = APIRouter(
@@ -36,12 +36,34 @@ class SectionExplainRequest(BaseModel):
     section_title: str | None = ""
     section_text: str | None = ""
 
+
+@router.get("/")
+async def list_acts():
+    """List all priority bare acts."""
+    import structlog
+    logger = structlog.get_logger()
+    logger.info("list_bare_acts")
+    acts = await get_all_acts()
+    return acts
+
+
+@router.get("/{act_slug}")
+async def get_act(act_slug: str):
+    """Fetch full act text with table of contents."""
+    import structlog
+    logger = structlog.get_logger()
+    logger.info("get_bare_act", act=act_slug)
+    act_data = await get_act_details(act_slug)
+    if not act_data or not act_data.get("sections"):
+        raise HTTPException(status_code=404, detail=f"Act '{act_slug}' not found or has no sections.")
+    return act_data
+
+
 @router.post("/explain-section")
 async def explain_section(
-    request: SectionExplainRequest,
-    current_user: FirebaseUser = Depends(get_current_user)
+    request: SectionExplainRequest
 ):
-    """Explain a section using AI. Requires authentication."""
+    """Explain a section using AI."""
     import structlog
     logger = structlog.get_logger()
     
@@ -52,7 +74,7 @@ async def explain_section(
     
     section_number = request.section_number
     
-    logger.info("explain_section_request", act=act_id, section=section_number, user=current_user.uid)
+    logger.info("explain_section_request", act=act_id, section=section_number)
     
     # If we have the full text, use it. Otherwise, fetch it (backward compatibility)
     if request.section_text and request.section_title:

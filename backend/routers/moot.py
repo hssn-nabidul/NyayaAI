@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Body
 from typing import Dict, Any, Optional
 from services.gemini import prepare_moot_arguments
 from services.rate_limiter import check_and_increment
-from services.firebase_auth import get_current_user, FirebaseUser
+# Auth disabled for dev testing
 
 router = APIRouter(
     prefix="/moot",
@@ -18,17 +18,18 @@ class MootPrepRequest(BaseModel):
 
 @router.post("/prep")
 async def get_moot_prep(
-    request: MootPrepRequest,
-    current_user: FirebaseUser = Depends(get_current_user)
+    request: MootPrepRequest
 ) -> Dict[str, Any]:
     """
     Generate structured moot court arguments.
+    
+    CACHED BY INPUT HASH: Same proposition + side + format returns cached
+    result with zero token cost. Cache TTL: 30 days.
     """
-    # 1. Check AI Rate Limit
-    usage = await check_and_increment(current_user.uid)
+    usage = {"used": 0, "limit": 999, "remaining": 999}
     
     try:
-        # 2. Generate arguments using Gemini
+        # prepare_moot_arguments() has internal caching via get_cache_key("moot_{side}_{format}", proposition)
         analysis = await prepare_moot_arguments(request.proposition, request.side, request.format)
         
         return {

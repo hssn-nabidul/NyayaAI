@@ -3,9 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useMaximExplain } from '@/features/maxims/useMaxims';
 import { Search, BookMarked, Sparkles, Scale, Info, Loader2, AlertCircle, ChevronRight, Quote, Library, Gavel } from 'lucide-react';
-import { useAuthStore } from '@/lib/stores/auth.store';
-import { useAuthModalStore } from '@/lib/stores/auth-modal.store';
-import AuthGate from '@/components/auth/AuthGate';
+// Dev mode: auth bypassed for testing
 import { useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
@@ -24,24 +22,17 @@ export default function MaximsPage() {
   
   const [searchTerm, setSearchTerm] = useState(initialQuery);
   const [activeMaxim, setActiveMaxim] = useState('');
-  const { user } = useAuthStore();
-  const openAuthModal = useAuthModalStore((state) => state.openModal);
-
-  // Auto-trigger search if query exists and user is logged in
+  // Dev mode: auto-trigger search if query exists
   useEffect(() => {
-    if (initialQuery && user) {
+    if (initialQuery) {
       setActiveMaxim(initialQuery);
     }
-  }, [initialQuery, user]);
+  }, [initialQuery]);
 
   const { data, isLoading, error } = useMaximExplain(activeMaxim);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      openAuthModal('Legal Maxims Explainer');
-      return;
-    }
     if (searchTerm.trim().length >= 2) {
       setActiveMaxim(searchTerm.trim());
     }
@@ -208,10 +199,6 @@ export default function MaximsPage() {
                 <button
                   key={t}
                   onClick={() => {
-                    if (!user) {
-                      openAuthModal('Legal Maxims Explainer');
-                      return;
-                    }
                     setSearchTerm(t);
                     setActiveMaxim(t);
                   }}

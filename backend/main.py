@@ -9,7 +9,6 @@ import structlog
 from dotenv import load_dotenv
 from pathlib import Path
 from contextlib import asynccontextmanager
-from services.judis_scraper import judis_scraper
 
 # Setup logging
 log = structlog.get_logger()
@@ -50,22 +49,23 @@ init_engine_db()
 
 # Now import routers
 from routers import auth, search, cases, judges, moot, draft, legal_dictionary, analyse, rights, bare_acts, admin, internal_data
+from services.utils import GROQ_API_KEY, GROQ_API_BASE, GROQ_MODEL
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    log.info("nyaya_startup", source="JUDIS — no API dependency")
+    log.info("nyaya_startup", source="Indian Kanoon API")
     yield
-    await judis_scraper.close()
     log.info("nyaya_shutdown")
 
 app = FastAPI(title="Nyaya API", version="1.0.0", lifespan=lifespan)
 
-# Configure CORS
-origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001").split(",")
+# Configure CORS — allow any localhost port for dev, plus configured origins
+origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001,http://localhost:3002,http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:3002").split(",")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -101,6 +101,30 @@ async def root():
 @app.api_route("/health", methods=["GET", "HEAD"])
 async def health_check():
     return {"status": "healthy"}
+
+@app.get("/debug/groq")
+async def debug_groq():
+    """Debug endpoint to test Groq API connectivity from within the server process."""
+    import httpx
+    import json
+    try:
+        url = f"{GROQ_API_BASE}/chat/completions"
+        headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
+        payload = {
+            "model": GROQ_MODEL,
+            "messages": [{"role": "user", "content": "Say hello in JSON: {\"greeting\": \"hello\"}"}],
+            "response_format": {"type": "json_object"}
+        }
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(url, json=payload, headers=headers)
+            if resp.status_code == 200:
+                data = resp.json()
+                content = data["choices"][0]["message"]["content"]
+                return {"status": "ok", "groq_api": True, "response": content}
+            else:
+                return {"status": "error", "groq_api": False, "http_status": resp.status_code, "detail": resp.text[:300]}
+    except Exception as e:
+        return {"status": "error", "groq_api": False, "exception": str(e)}
 
 if __name__ == "__main__":
     import uvicorn

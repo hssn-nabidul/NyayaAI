@@ -2,6 +2,7 @@ import sqlite3
 import json
 import time
 import os
+import platform
 import threading
 from pathlib import Path
 from typing import Any, Optional, Dict
@@ -18,9 +19,13 @@ logger = structlog.get_logger()
 # 3. A table in your primary production database (PostgreSQL).
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Use /tmp for slightly better compatibility with read-only filesystems
-# fallback to current directory if /tmp is not available (e.g. Windows dev)
-DEFAULT_CACHE_DIR = "/tmp" if os.path.exists("/tmp") else str(Path(__file__).parent.parent)
+# Use /tmp for better compatibility with read-only filesystems (Render deployment).
+# On Windows, /tmp resolves to C:\tmp which is outside the project and
+# can lead to stale caches persisting across restarts.
+if platform.system() == "Windows":
+    DEFAULT_CACHE_DIR = str(Path(__file__).parent.parent)
+else:
+    DEFAULT_CACHE_DIR = "/tmp" if os.path.exists("/tmp") else str(Path(__file__).parent.parent)
 CACHE_DB_PATH = os.environ.get("CACHE_DB_PATH", os.path.join(DEFAULT_CACHE_DIR, "nyaya_cache.db"))
 
 class CacheService:
@@ -57,6 +62,15 @@ class CacheService:
             )
         ''')
         
+        # Table for chat response caching (identical queries)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS chat_cache (
+                cache_key TEXT PRIMARY KEY,
+                cache_value TEXT,
+                expires_at REAL
+            )
+        ''')
+        
         conn.commit()
         conn.close()
 
@@ -84,11 +98,12 @@ class CacheService:
             now = time.time()
             cursor.execute("DELETE FROM ai_cache WHERE expires_at < ?", (now,))
             cursor.execute("DELETE FROM kanoon_cache WHERE expires_at < ?", (now,))
+            cursor.execute("DELETE FROM chat_cache WHERE expires_at < ?", (now,))
             
             # 2. If size is still too large, delete oldest 25% entries
             if self.get_cache_size_mb() > max_size_mb:
                 logger.warning("cache_limit_exceeded", size=f"{self.get_cache_size_mb():.2f}MB", limit=max_size_mb)
-                for table in ["ai_cache", "kanoon_cache"]:
+                for table in ["ai_cache", "kanoon_cache", "chat_cache"]:
                     cursor.execute(f'''
                         DELETE FROM {table} 
                         WHERE cache_key IN (
@@ -116,7 +131,7 @@ class CacheService:
             conn = sqlite3.connect(CACHE_DB_PATH)
             cursor = conn.cursor()
             
-            if table not in ["ai_cache", "kanoon_cache"]:
+            if table not in ["ai_cache", "kanoon_cache", "chat_cache"]:
                 return None
                 
             cursor.execute(f"SELECT cache_value, expires_at FROM {table} WHERE cache_key = ?", (key,))
@@ -144,7 +159,7 @@ class CacheService:
             conn = sqlite3.connect(CACHE_DB_PATH)
             cursor = conn.cursor()
             
-            if table not in ["ai_cache", "kanoon_cache"]:
+            if table not in ["ai_cache", "kanoon_cache", "chat_cache"]:
                 return
                 
             value_json = json.dumps(value)

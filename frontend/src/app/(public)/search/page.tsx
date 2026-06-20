@@ -7,12 +7,10 @@ import NLPSearchBox from '@/components/search/NLPSearchBox';
 import SearchResultCard from '@/components/search/SearchResultCard';
 import SearchFilters from '@/components/search/SearchFilters';
 import { useSearch, SearchFilters as IFilters } from '@/features/search/useSearch';
-import { useAuthStore } from '@/lib/stores/auth.store';
 import { Loader2, Search as SearchIcon, AlertCircle, Sparkles, Filter, Info, Library } from 'lucide-react';
 import Link from 'next/link';
 import { NLPSearchResponse } from '@/features/search/useNLPSearch';
 import { SearchResult } from '@/types/api';
-import { useAuthModalStore } from '@/lib/stores/auth-modal.store';
 import { cn } from '@/lib/utils';
 
 export default function SearchPage() {
@@ -20,8 +18,6 @@ export default function SearchPage() {
   const router = useRouter();
   const query = searchParams.get('q') || '';
   const page = parseInt(searchParams.get('page') || '0');
-  const openAuthModal = useAuthModalStore((state) => state.openModal);
-  
   // Local state for filters
   const [filters, setFilters] = React.useState<IFilters>({
     court: searchParams.get('court') || 'all',
@@ -41,7 +37,6 @@ export default function SearchPage() {
   const [searchMode, setSearchMode] = React.useState<'keyword' | 'nlp'>('keyword');
   const [nlpResults, setNlpResults] = React.useState<NLPSearchResponse | null>(null);
 
-  const { user } = useAuthStore();
   const { data, isLoading, error } = useSearch(query, page, filters);
 
   // Correctly mapping the results based on mode
@@ -108,10 +103,6 @@ export default function SearchPage() {
             </button>
             <button 
               onClick={() => {
-                if (!user) {
-                  openAuthModal('AI Natural Language Search');
-                  return;
-                }
                 setSearchMode('nlp');
               }}
               className={cn(

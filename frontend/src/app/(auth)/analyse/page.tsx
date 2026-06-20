@@ -221,7 +221,7 @@ export default function AnalysePage() {
                     <p className="text-[9px] text-ink/30 uppercase tracking-[0.2em] font-bold">Interactive Scholarly Chat</p>
                   </div>
                 </div>
-                <DeepAnalysisChat context={docText} />
+                <DeepAnalysisChat context={docText} analysis={data?.analysis} />
               </div>
             </div>
           )}

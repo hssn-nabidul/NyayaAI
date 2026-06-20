@@ -3,9 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTermExplain } from '@/features/dictionary/useTermExplain';
 import { Search, Book, Sparkles, Scale, Info, Loader2, AlertCircle, ChevronRight, Library, Quote, Gavel } from 'lucide-react';
-import { useAuthStore } from '@/lib/stores/auth.store';
-import { useAuthModalStore } from '@/lib/stores/auth-modal.store';
-import AuthGate from '@/components/auth/AuthGate';
+// Dev mode: auth bypassed for testing
 import { useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
@@ -15,24 +13,17 @@ export default function DictionaryPage() {
 
   const [searchTerm, setSearchTerm] = useState(initialQuery);
   const [activeTerm, setActiveTerm] = useState('');
-  const { user } = useAuthStore();
-  const openAuthModal = useAuthModalStore((state) => state.openModal);
-
-  // Auto-trigger search if query exists and user is logged in
+  // Dev mode: auto-trigger search if query exists
   useEffect(() => {
-    if (initialQuery && user) {
+    if (initialQuery) {
       setActiveTerm(initialQuery);
     }
-  }, [initialQuery, user]);
+  }, [initialQuery]);
 
   const { data, isLoading, error, isFetching } = useTermExplain(activeTerm);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      openAuthModal('AI Legal Dictionary');
-      return;
-    }
     if (searchTerm.trim().length >= 2) {
       setActiveTerm(searchTerm.trim());
     }

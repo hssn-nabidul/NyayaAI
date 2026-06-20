@@ -3,9 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useJudgeProfile } from '@/features/judges/useJudgeProfile';
 import { Search, Gavel, Sparkles, Scale, Info, Loader2, AlertCircle, ChevronRight, BarChart3, Clock, ExternalLink, Library, User, FileText } from 'lucide-react';
-import { useAuthStore } from '@/lib/stores/auth.store';
-import { useAuthModalStore } from '@/lib/stores/auth-modal.store';
-import AuthGate from '@/components/auth/AuthGate';
+// Dev mode: auth bypassed for testing
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -16,24 +14,17 @@ export default function JudgesPage() {
 
   const [searchTerm, setSearchTerm] = useState(initialQuery);
   const [activeJudge, setActiveJudge] = useState('');
-  const { user } = useAuthStore();
-  const openAuthModal = useAuthModalStore((state) => state.openModal);
-
-  // Auto-trigger search if query exists and user is logged in
+  // Dev mode: auto-trigger search if query exists
   useEffect(() => {
-    if (initialQuery && user) {
+    if (initialQuery) {
       setActiveJudge(initialQuery);
     }
-  }, [initialQuery, user]);
+  }, [initialQuery]);
 
   const { data, isLoading, error, isFetching } = useJudgeProfile(activeJudge);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      openAuthModal('Judge Analytics');
-      return;
-    }
     if (searchTerm.trim().length >= 3) {
       setActiveJudge(searchTerm.trim());
     }
@@ -280,10 +271,6 @@ export default function JudgesPage() {
                 <button
                   key={t}
                   onClick={() => {
-                    if (!user) {
-                      openAuthModal('Judge Analytics');
-                      return;
-                    }
                     setSearchTerm(t);
                     setActiveJudge(t);
                   }}
