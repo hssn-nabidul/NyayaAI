@@ -126,6 +126,62 @@ export default function FullScreenGraphPage() {
     );
   }
 
+  if (graphError) {
+    return (
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-parchment space-y-8 px-6">
+        <div className="w-20 h-20 rounded-library bg-status-red/5 border border-divider flex items-center justify-center">
+          <Network size={32} className="text-status-red/50" />
+        </div>
+        <div className="text-center space-y-3 max-w-lg">
+          <h2 className="text-ink font-serif text-3xl italic font-bold tracking-tight">Unable to Map Citations</h2>
+          <p className="text-ink/40 leading-relaxed text-sm">
+            The institutional archive could not retrieve citation relationships for this record.
+            This may be due to a temporary network issue or the record having no linked references.
+          </p>
+        </div>
+        <div className="flex items-center gap-4 pt-4">
+          <button
+            onClick={() => refetch()}
+            className="flex items-center gap-2 px-6 py-3 bg-ink text-parchment rounded-library font-bold text-[11px] uppercase tracking-widest hover:bg-gold transition-all shadow-md"
+          >
+            <RefreshCw size={16} />
+            Retry Mapping
+          </button>
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 px-6 py-3 bg-parchment-dim text-ink rounded-library border border-divider font-bold text-[11px] uppercase tracking-widest hover:bg-ink/5 transition-all"
+          >
+            <ArrowLeft size={16} />
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!graphData || !graphData.nodes || graphData.nodes.length <= 1) {
+    return (
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-parchment space-y-8 px-6">
+        <div className="w-20 h-20 rounded-library bg-ink/5 border border-divider flex items-center justify-center">
+          <Network size={32} className="text-ink/10" />
+        </div>
+        <div className="text-center space-y-3 max-w-lg">
+          <h2 className="text-ink font-serif text-3xl italic font-bold tracking-tight">No Citation Network Found</h2>
+          <p className="text-ink/40 leading-relaxed text-sm">
+            This record has no linked citations in the institutional archive.
+          </p>
+        </div>
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 px-6 py-3 bg-parchment-dim text-ink rounded-library border border-divider font-bold text-[11px] uppercase tracking-widest hover:bg-ink/5 transition-all"
+        >
+          <ArrowLeft size={16} />
+          Go Back
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen w-full bg-parchment overflow-hidden relative">
       {/* Top Header Overlay */}

@@ -32,7 +32,7 @@ async def get_draft_suggestions(
         suggestions = await suggest_draft_cases(request.draft_text, request.max_suggestions)
         
         return {
-            "analysis": suggestions,
+            **suggestions,
             "usage": usage
         }
     except Exception as e:
